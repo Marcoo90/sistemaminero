@@ -1,0 +1,365 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Area {
+  id_area     Int        @id @default(autoincrement())
+  nombre_area String
+  descripcion String?
+  personal    Personal[]
+  equipos     Equipo[]
+  vehiculos   Vehiculo[]
+  vales       Vale[]
+  ordenes     Orden[]
+  salidas     SalidaMaterial[]
+  materiales  Material[]
+}
+
+model Personal {
+  id_personal   Int          @id @default(autoincrement())
+  dni           String       @unique
+  nombres       String
+  cargo         String
+  id_area       Int
+  area          Area         @relation(fields: [id_area], references: [id_area])
+  regimen       String
+  fecha_ingreso DateTime
+  estado        String       // 'activo' | 'inactivo' | 'vacaciones'
+  telefono      String?
+  observaciones String?
+  fecha_registro DateTime @default(now())
+  asistencias   Asistencia[]
+  contratos     Contrato[]
+  entregas_epp  EntregaEPP[]
+  usuario       Usuario?
+  viajes        Viaje[]
+}
+
+model Usuario {
+  id_usuario  Int      @id @default(autoincrement())
+  usuario     String   @unique
+  clave       String
+  rol         String   // 'admin' | 'supervisor' | 'operador' | 'gerencia'
+  nombre      String
+  id_personal Int?     @unique
+  personal    Personal? @relation(fields: [id_personal], references: [id_personal])
+}
+
+model Asistencia {
+  id_asistencia Int      @id @default(autoincrement())
+  id_personal   Int
+  personal      Personal @relation(fields: [id_personal], references: [id_personal])
+  fecha         DateTime
+  turno_dia     Boolean
+  turno_noche   Boolean
+  estado        String   // 'presente' | 'falta' | 'tardanza' | 'justificada' | 'permiso' | 'descanso'
+  observaciones String?
+}
+
+model Equipo {
+  id_equipo               Int                 @id @default(autoincrement())
+  codigo_equipo           String              @unique
+  tipo_equipo             String
+  categoria               String
+  descripcion             String?
+  marca                   String?
+  modelo                  String?
+  serie                   String?
+  capacidad               String?
+  energia                 String?
+  estado                  String              // 'operativo' | 'mantenimiento' | 'inoperativo'
+  id_area                 Int
+  area                    Area                @relation(fields: [id_area], references: [id_area])
+  responsable             String?
+  fecha_adquisicion       DateTime?
+  horometro               Float               @default(0)
+  horometro_mantenimiento Int                 @default(0)
+  observaciones           String?
+  fecha_registro          DateTime            @default(now())
+  mantenimientos          MantenimientoEquipo[]
+}
+
+model MantenimientoEquipo {
+  id_mant_equipo     Int      @id @default(autoincrement())
+  id_equipo          Int
+  equipo             Equipo   @relation(fields: [id_equipo], references: [id_equipo])
+  fecha              DateTime
+  tipo_mantenimiento String   // 'preventivo' | 'correctivo'
+  horometro          Float
+  proveedor          String?
+  costo              Float
+  observaciones      String?
+}
+
+model Vehiculo {
+  id_vehiculo        Int                   @id @default(autoincrement())
+  codigo_vehiculo    String                @unique
+  tipo               String
+  marca              String?
+  modelo             String?
+  anio               Int?
+  placa              String?               @unique
+  vin                String?               @unique
+  combustible_tipo   String                // 'diesel' | 'gasolina'
+  capacidad          String?
+  estado             String                // 'operativo' | 'taller' | 'baja'
+  id_area            Int
+  area               Area                  @relation(fields: [id_area], references: [id_area])
+  responsable        String?
+  km_horometro       Float                 @default(0)
+  km_mantenimiento   Float                 @default(0)
+  soat               String?
+  seguro             String?
+  revision_tecnica   String?
+  observaciones      String?
+  fecha_registro     DateTime              @default(now())
+  mantenimientos     MantenimientoVehiculo[]
+  cargas_combustible Combustible[]
+  viajes             Viaje[]
+}
+
+model MantenimientoVehiculo {
+  id_mant_vehiculo   Int      @id @default(autoincrement())
+  id_vehiculo        Int
+  vehiculo           Vehiculo @relation(fields: [id_vehiculo], references: [id_vehiculo])
+  fecha              DateTime
+  tipo_mantenimiento String   // 'preventivo' | 'correctivo'
+  km_horometro       Float
+  proveedor          String?
+  costo              Float
+  observaciones      String?
+}
+
+model Combustible {
+  id_combustible Int      @id @default(autoincrement())
+  id_vehiculo    Int
+  vehiculo       Vehiculo @relation(fields: [id_vehiculo], references: [id_vehiculo])
+  fecha          DateTime
+  km_anterior    Float
+  km_horometro   Float
+  litros         Float
+  precio_litro   Float
+  costo_total    Float
+  vale           String?
+  conductor      String?
+  proveedor      String?
+  observaciones  String?
+}
+
+model Vale {
+  id_vale        Int      @id @default(autoincrement())
+  numero_vale    String   @unique
+  fecha          DateTime
+  solicitante    String
+  id_area        Int
+  area           Area     @relation(fields: [id_area], references: [id_area])
+  concepto       String
+  monto          Float
+  autorizado_por String?
+  estado         String   // 'aprobado' | 'pendiente' | 'rechazado'
+  observaciones  String?
+}
+
+model Orden {
+  id_orden       Int      @id @default(autoincrement())
+  numero_orden   String   @unique
+  fecha          DateTime
+  tipo_orden     String   // 'compra' | 'servicio'
+  id_area        Int
+  area           Area     @relation(fields: [id_area], references: [id_area])
+  descripcion    String
+  cantidad       Float
+  responsable    String?
+  autorizado_por String?
+  estado         String   // 'aprobada' | 'pendiente' | 'rechazada'
+  observaciones  String?
+  detalles       DetalleOrden[]
+}
+
+model DetalleOrden {
+  id_detalle    Int     @id @default(autoincrement())
+  id_orden      Int
+  orden         Orden   @relation(fields: [id_orden], references: [id_orden], onDelete: Cascade)
+  descripcion   String
+  cantidad      Float
+  unidad_medida String?
+}
+
+model Proveedor {
+  id_proveedor  Int               @id @default(autoincrement())
+  nombre        String
+  ruc           String?           @unique
+  tipo          String?
+  telefono      String?
+  observaciones String?
+  ingresos      IngresoMaterial[]
+}
+
+model Almacen {
+  id_almacen    Int               @id @default(autoincrement())
+  nombre        String
+  ubicacion     String?
+  responsable   String?
+  observaciones String?
+  fecha_registro DateTime @default(now())
+  stocks        StockMaterial[]
+  ingresos      IngresoMaterial[]
+  salidas       SalidaMaterial[]
+  entregas_epp  EntregaEPP[]
+}
+
+model CategoriaMaterial {
+  id_categoria Int        @id @default(autoincrement())
+  nombre       String
+  descripcion  String?
+  materiales   Material[]
+}
+
+model Material {
+  id_material     Int                    @id @default(autoincrement())
+  codigo_material String                 @unique
+  nombre          String
+  id_categoria    Int
+  categoria       CategoriaMaterial      @relation(fields: [id_categoria], references: [id_categoria])
+  unidad_medida   String
+  stock_minimo    Float                  @default(0)
+  descripcion     String?
+  precio          Float                  @default(0)
+  id_area         Int?
+  area            Area?                  @relation(fields: [id_area], references: [id_area])
+  estado          String                 // 'activo' | 'inactivo'
+  fecha_registro  DateTime               @default(now())
+  stocks          StockMaterial[]
+  detalles_ingreso DetalleIngresoMaterial[]
+  detalles_salida  DetalleSalidaMaterial[]
+  detalles_epp     DetalleEntregaEPP[]
+}
+
+model IngresoMaterial {
+  id_ingreso   Int                      @id @default(autoincrement())
+  fecha        DateTime
+  tipo_ingreso String
+  documento    String?
+  id_proveedor Int
+  proveedor    Proveedor                @relation(fields: [id_proveedor], references: [id_proveedor])
+  id_almacen   Int
+  almacen      Almacen                  @relation(fields: [id_almacen], references: [id_almacen])
+  recibido_por String?
+  observaciones String?
+  detalles     DetalleIngresoMaterial[]
+}
+
+model DetalleIngresoMaterial {
+  id_det_ingreso Int             @id @default(autoincrement())
+  id_ingreso     Int
+  ingreso        IngresoMaterial @relation(fields: [id_ingreso], references: [id_ingreso])
+  id_material    Int
+  material       Material        @relation(fields: [id_material], references: [id_material])
+  cantidad       Float
+  costo_unitario Float
+  costo_total    Float
+}
+
+model SalidaMaterial {
+  id_salida     Int                    @id @default(autoincrement())
+  fecha         DateTime
+  tipo_salida   String
+  id_area       Int
+  area          Area                   @relation(fields: [id_area], references: [id_area])
+  solicitado_por String?
+  autorizado_por String?
+  id_almacen    Int
+  almacen       Almacen                @relation(fields: [id_almacen], references: [id_almacen])
+  observaciones String?
+  detalles      DetalleSalidaMaterial[]
+}
+
+model DetalleSalidaMaterial {
+  id_det_salida Int            @id @default(autoincrement())
+  id_salida     Int
+  salida        SalidaMaterial @relation(fields: [id_salida], references: [id_salida])
+  id_material   Int
+  material      Material       @relation(fields: [id_material], references: [id_material])
+  cantidad      Float
+}
+
+model StockMaterial {
+  id_material  Int
+  id_almacen   Int
+  stock_actual Float
+  material     Material @relation(fields: [id_material], references: [id_material])
+  almacen      Almacen  @relation(fields: [id_almacen], references: [id_almacen])
+
+  @@id([id_material, id_almacen])
+}
+
+model Contrato {
+  id_contrato       Int      @id @default(autoincrement())
+  id_personal       Int
+  personal          Personal @relation(fields: [id_personal], references: [id_personal])
+  fecha_inicio      DateTime
+  fecha_fin         DateTime
+  tipo_contrato     String   // 'indeterminado' | 'plazo_fijo' | 'locacion' | 'planilla'
+  sueldo_base       Float
+  estado            String   // 'vigente' | 'vencido' | 'renovado'
+  documento_adjunto String?
+  observaciones     String?
+}
+
+model EntregaEPP {
+  id_entrega_epp      Int                 @id @default(autoincrement())
+  id_personal         Int
+  personal            Personal            @relation(fields: [id_personal], references: [id_personal])
+  fecha               DateTime
+  id_almacen          Int
+  almacen             Almacen             @relation(fields: [id_almacen], references: [id_almacen])
+  responsable_entrega String
+  firmado             Boolean             @default(false)
+  observaciones       String?
+  detalles            DetalleEntregaEPP[]
+}
+
+model DetalleEntregaEPP {
+  id_det_entrega Int        @id @default(autoincrement())
+  id_entrega_epp Int
+  entrega        EntregaEPP @relation(fields: [id_entrega_epp], references: [id_entrega_epp])
+  id_material    Int
+  material       Material   @relation(fields: [id_material], references: [id_material])
+  cantidad       Float
+  talla          String?
+}
+
+model Viaje {
+  id_viaje      Int          @id @default(autoincrement())
+  id_vehiculo   Int
+  vehiculo      Vehiculo     @relation(fields: [id_vehiculo], references: [id_vehiculo])
+  id_conductor  Int
+  conductor     Personal     @relation(fields: [id_conductor], references: [id_personal])
+  fecha_salida  DateTime
+  fecha_retorno DateTime?
+  origen        String
+  destino       String
+  km_inicial    Float
+  km_final      Float?
+  estado        String       // 'en_ruta', 'finalizado'
+  gastos        GastoViaje[]
+}
+
+model GastoViaje {
+  id_gasto      Int      @id @default(autoincrement())
+  id_viaje      Int
+  viaje         Viaje    @relation(fields: [id_viaje], references: [id_viaje])
+  tipo          String   // 'peaje', 'viatico', 'lavado', 'llantas', 'engrase', 'combustible', 'otros'
+  monto         Float
+  fecha         DateTime
+  foto_url      String?
+  observaciones String?
+}
