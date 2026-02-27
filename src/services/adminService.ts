@@ -93,7 +93,7 @@ export async function updateOrden(id: number, data: Partial<Orden> & { detalles?
     const { detalles, area, ...ordenData } = data;
 
     // Use transaction to update main data and replace details
-    const updated = await prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx: any) => {
         if (detalles) {
             // Delete existing details
             await tx.detalleOrden.deleteMany({
