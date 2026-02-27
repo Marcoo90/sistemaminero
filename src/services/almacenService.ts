@@ -98,7 +98,7 @@ export async function registrarIngreso(ingreso: Partial<IngresoMaterial>, detall
                 recibido_por: ingreso.recibido_por,
                 observaciones: ingreso.observaciones,
                 detalles: {
-                    create: detalles.map(det => ({
+                    create: detalles.map((det: any) => ({
                         id_material: Number(det.id_material),
                         cantidad: Number(det.cantidad),
                         costo_unitario: Number(det.costo_unitario),
@@ -154,7 +154,7 @@ export async function registrarSalida(salida: Partial<SalidaMaterial>, detalles:
                 id_almacen: Number(salida.id_almacen),
                 observaciones: salida.observaciones,
                 detalles: {
-                    create: detalles.map(det => ({
+                    create: detalles.map((det: any) => ({
                         id_material: Number(det.id_material),
                         cantidad: Number(det.cantidad)
                     }))
@@ -252,7 +252,7 @@ export async function saveMaterial(data: Partial<Material> & { stock_inicial?: n
         const existing = await prisma.material.findUnique({ where: { codigo_material: data.codigo_material } });
         if (existing) throw new Error(`El código '${data.codigo_material}' ya está en uso.`);
 
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: any) => {
             const material = await tx.material.create({
                 data: {
                     codigo_material: data.codigo_material!,
@@ -307,7 +307,7 @@ export async function saveCategoria(data: Partial<CategoriaMaterial>): Promise<b
 
 export async function deleteMaterial(id: number): Promise<void> {
     try {
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: any) => {
             // 1. Eliminar detalles de EPP relacionados
             await tx.detalleEntregaEPP.deleteMany({ where: { id_material: id } });
 

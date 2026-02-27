@@ -77,7 +77,7 @@ export async function createOrden(data: Omit<Orden, 'id_orden'> & { detalles?: {
             fecha: new Date(`${data.fecha}T12:00:00Z`),
             estado: data.estado as string,
             detalles: {
-                create: detalles?.map(d => ({
+                create: detalles?.map((d: any) => ({
                     descripcion: d.descripcion,
                     cantidad: Number(d.cantidad),
                     unidad_medida: d.unidad_medida
@@ -114,7 +114,7 @@ export async function updateOrden(id: number, data: Partial<Orden> & { detalles?
                 fecha: ordenData.fecha ? new Date(`${ordenData.fecha}T12:00:00Z`) : undefined,
                 estado: ordenData.estado as string,
                 detalles: detalles ? {
-                    create: detalles.map(d => ({
+                    create: detalles.map((d: any) => ({
                         descripcion: d.descripcion,
                         cantidad: Number(d.cantidad),
                         unidad_medida: d.unidad_medida

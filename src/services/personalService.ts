@@ -100,7 +100,7 @@ export async function getContratos(idPersonal?: number): Promise<Contrato[]> {
     const data = await prisma.contrato.findMany({
         where: idPersonal ? { id_personal: idPersonal } : {}
     });
-    return data.map(c => ({
+    return data.map((c: any) => ({
         ...c,
         fecha_inicio: toPeruDate(c.fecha_inicio),
         fecha_fin: toPeruDate(c.fecha_fin)
@@ -152,14 +152,14 @@ export async function getEntregaEPPAll(): Promise<any[]> {
         },
         orderBy: { fecha: 'desc' }
     });
-    return data.map(d => ({
+    return data.map((d: any) => ({
         ...d,
         fecha: toPeruTime(d.fecha)
     }));
 }
 
 export async function registrarEntregaEPP(entrega: any, detalles: any[]): Promise<boolean> {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
         // 1. Create the delivery record
         await tx.entregaEPP.create({
             data: {
@@ -168,7 +168,7 @@ export async function registrarEntregaEPP(entrega: any, detalles: any[]): Promis
                 id_almacen: Number(entrega.id_almacen),
                 fecha: new Date(),
                 detalles: {
-                    create: detalles.map(d => ({
+                    create: detalles.map((d: any) => ({
                         id_material: Number(d.id_material),
                         cantidad: Number(d.cantidad),
                         talla: d.talla
@@ -215,7 +215,7 @@ export async function registrarEntregaEPP(entrega: any, detalles: any[]): Promis
 
 export async function deleteEntregaEPP(id: number): Promise<void> {
     try {
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: any) => {
             // 1. Eliminar detalles primero
             await tx.detalleEntregaEPP.deleteMany({
                 where: { id_entrega_epp: id }
