@@ -30,7 +30,7 @@ const formatSalida = (s: any): SalidaMaterial => ({
 
 export async function getAlmacenesAll(): Promise<Almacen[]> {
     const data = await prisma.almacen.findMany();
-    return data.map(a => ({
+    return data.map((a: any) => ({
         ...a,
         fecha_registro: (a as any).fecha_registro ? toPeruTime((a as any).fecha_registro) : ''
     })) as Almacen[];
