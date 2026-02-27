@@ -70,7 +70,7 @@ export async function getAllStock(): Promise<any[]> {
         }
     });
 
-    return data.map(s => ({
+    return data.map((s: any) => ({
         id_material: s.id_material,
         stock_actual: s._sum.stock_actual || 0
     }));
