@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { Vehiculo, MantenimientoVehiculo, Combustible } from '@/types';
+import { unstable_noStore as noStore } from 'next/cache';
 
 import { toPeruDate, toPeruTime } from '@/lib/dateUtils';
 
@@ -18,6 +19,7 @@ const formatCombustible = (c: any): Combustible => ({
 });
 
 export async function getVehiculosAll(): Promise<Vehiculo[]> {
+    noStore();
     const data = await prisma.vehiculo.findMany();
     return data.map(formatVehiculo);
 }

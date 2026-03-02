@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { Viaje, GastoViaje } from '@/types';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { supabase } from '@/lib/supabase';
 import sharp from 'sharp';
 
@@ -20,6 +20,7 @@ const formatGasto = (g: any): GastoViaje => ({
 });
 
 export async function getViajesByConductor(idConductor: number): Promise<Viaje[]> {
+    noStore();
     const viajes = await prisma.viaje.findMany({
         where: { id_conductor: idConductor },
         include: { vehiculo: true, gastos: true },
@@ -29,6 +30,7 @@ export async function getViajesByConductor(idConductor: number): Promise<Viaje[]
 }
 
 export async function getViajesAll(): Promise<Viaje[]> {
+    noStore();
     const viajes = await prisma.viaje.findMany({
         include: { vehiculo: true, conductor: true, gastos: true },
         orderBy: { fecha_salida: 'desc' }
@@ -37,6 +39,7 @@ export async function getViajesAll(): Promise<Viaje[]> {
 }
 
 export async function getViajeActivo(idConductor: number): Promise<Viaje | null> {
+    noStore();
     const viaje = await prisma.viaje.findFirst({
         where: {
             id_conductor: idConductor,

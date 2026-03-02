@@ -1,5 +1,8 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
+
 import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useViajes } from '@/hooks/useViajes';
