@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { Area, Personal, Contrato } from '@/types';
+import { unstable_noStore as noStore } from 'next/cache';
 import { toPeruDate, toPeruTime } from '@/lib/dateUtils';
 
 // Helper to convert Prisma dates to formatted strings
@@ -28,6 +29,7 @@ const formatPersonal = (item: any) => ({
 
 // Area Functions
 export async function getAreasAll(): Promise<Area[]> {
+    noStore();
     return await prisma.area.findMany() as Area[];
 }
 
