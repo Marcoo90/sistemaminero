@@ -26,7 +26,6 @@ export default function VehiculoForm({ initialData, onSave, onCancel }: Vehiculo
         capacidad: '',
         estado: 'operativo',
         id_area: 0,
-        responsable: '',
         km_horometro: 0,
         km_mantenimiento: 0,
         soat: '',
@@ -108,7 +107,6 @@ export default function VehiculoForm({ initialData, onSave, onCancel }: Vehiculo
 
                     <Input label="Kilometraje/Horómetro" name="km_horometro" type="number" value={formData.km_horometro} onChange={handleChange} />
                     <Input label="Próximo Mant. (KM)" name="km_mantenimiento" type="number" value={formData.km_mantenimiento} onChange={handleChange} />
-                    <Input label="Responsable" name="responsable" value={formData.responsable} onChange={handleChange} />
                     <Input label="SOAT" name="soat" value={formData.soat} onChange={handleChange} />
                 </div>
 

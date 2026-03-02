@@ -93,7 +93,6 @@ export interface Vehiculo {
     capacidad: string;
     estado: 'operativo' | 'taller' | 'baja';
     id_area: number;
-    responsable: string;
     km_horometro: number;
     km_mantenimiento: number; // Next maintenance KM
     soat: string;
