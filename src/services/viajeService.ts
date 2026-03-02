@@ -3,8 +3,8 @@
 import { prisma } from '@/lib/prisma';
 import { Viaje, GastoViaje } from '@/types';
 import { revalidatePath } from 'next/cache';
-import fs from 'fs';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
+import sharp from 'sharp';
 
 // Helper for date formatting
 const formatViaje = (v: any): Viaje => ({
@@ -109,19 +109,42 @@ export async function subirComprobante(formData: FormData): Promise<string> {
     const file = formData.get('file') as File;
     if (!file) throw new Error('No se ha subido ningún archivo');
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const filename = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'comprobantes');
+    // Generar un nombre de archivo único con extensión .webp para máxima compresión
+    const filename = `${Date.now()}_comprobante.webp`;
 
-    // Ensure dir exists
-    if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
+    // 1. Convertir el archivo a Buffer para poder procesarlo en el servidor
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // 2. Procesar con SHARP para optimizar
+    // - Redimensionamos a un ancho máximo de 1200px
+    // - Convertimos a formato WebP (más ligero que JPG/PNG)
+    // - Calidad del 80% (mantiene perfecta legibilidad)
+    const processedBuffer = await sharp(buffer)
+        .resize({ width: 1200, withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+
+    // 3. Subir el Buffer optimizado a Supabase Storage
+    const { data, error } = await supabase.storage
+        .from('comprobantes')
+        .upload(filename, processedBuffer, {
+            contentType: 'image/webp',
+            cacheControl: '3600',
+            upsert: false
+        });
+
+    if (error) {
+        console.error('Error subiendo a Supabase:', error);
+        throw new Error('No se pudo subir la imagen optimizada a Supabase');
     }
 
-    const filepath = path.join(uploadDir, filename);
-    fs.writeFileSync(filepath, buffer);
+    // Obtener la URL pública de la imagen
+    const { data: { publicUrl } } = supabase.storage
+        .from('comprobantes')
+        .getPublicUrl(filename);
 
-    return `/uploads/comprobantes/${filename}`;
+    return publicUrl;
 }
 
 export async function deleteViaje(id: number): Promise<void> {
