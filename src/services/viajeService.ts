@@ -162,26 +162,33 @@ export async function subirComprobante(formData: FormData): Promise<string> {
     const file = formData.get('file') as File;
     if (!file) throw new Error('No se ha subido ningún archivo');
 
-    // Generar un nombre de archivo único con extensión .webp para máxima compresión
-    const filename = `${Date.now()}_comprobante.webp`;
-
-    // 1. Convertir el archivo a Buffer para poder procesarlo en el servidor
+    // 1. Convertir el archivo a Buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // --- TEMPORAL: DESACTIVAMOS SHARP PARA DIAGNÓSTICO ---
-    /*
-    const sharp = (await import('sharp')).default;
-    const processedBuffer = await sharp(buffer)
-        .resize({ width: 1200, withoutEnlargement: true })
-        .webp({ quality: 80 })
-        .toBuffer();
-    */
-    const processedBuffer = buffer; // Pasamos el original directamente
-    const contentType = file.type || 'image/jpeg';
-    // --- ------------------------------------------- ---
+    let processedBuffer = buffer;
+    let contentType = file.type || 'image/jpeg';
+    let finalExtension = file.type.split('/')[1] || 'jpg';
 
-    // 3. Subir el Buffer (sin optimizar ahora) a Supabase Storage
+    // 2. Intentar optimizar con SHARP (Resiliente)
+    try {
+        const sharp = (await import('sharp')).default;
+        const optimized = await sharp(buffer)
+            .resize({ width: 1200, withoutEnlargement: true })
+            .webp({ quality: 80 })
+            .toBuffer();
+        processedBuffer = optimized as any;
+        contentType = 'image/webp';
+        finalExtension = 'webp';
+        console.log("SHARP: Imagen optimizada con éxito.");
+    } catch (sharpError) {
+        console.error("SHARP_FAIL: Falló la optimización, usando original:", sharpError);
+        // Si falla sharp, mantenemos los valores originales de buffer y contentType
+    }
+
+    const filename = `${Date.now()}_comprobante.${finalExtension}`;
+
+    // 3. Subir a Supabase Storage
     const { data, error } = await supabase.storage
         .from('comprobantes')
         .upload(filename, processedBuffer, {
