@@ -1,9 +1,11 @@
 "use client";
 
 export const dynamic = 'force-dynamic';
-
+export const revalidate = 0;
 
 import React from 'react';
+import { redirect } from 'next/navigation';
+import { getViajeActivo, getViajesByConductor } from '@/services/viajeService';
 import { useAuth } from '@/context/AuthContext';
 import { useViajes } from '@/hooks/useViajes';
 import { AdminViajesView } from '@/components/viajes/AdminViajesView';
