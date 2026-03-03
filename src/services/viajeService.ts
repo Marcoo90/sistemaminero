@@ -56,34 +56,48 @@ const formatGasto = (g: any): GastoViaje => {
 };
 
 export async function getViajesByConductor(idConductor: number): Promise<Viaje[]> {
-    noStore();
-    const viajes = await prisma.viaje.findMany({
-        where: { id_conductor: idConductor },
-        include: { vehiculo: true, gastos: true },
-        orderBy: { fecha_salida: 'desc' }
-    });
-    return viajes.map(formatViaje);
+    try {
+        const viajes = await prisma.viaje.findMany({
+            where: { id_conductor: idConductor },
+            include: { vehiculo: true, gastos: true },
+            orderBy: { fecha_salida: 'desc' }
+        });
+        if (!viajes) return [];
+        return viajes.map(formatViaje);
+    } catch (e) {
+        console.error("error getViajesByConductor:", e);
+        return [];
+    }
 }
 
 export async function getViajesAll(): Promise<Viaje[]> {
-    noStore();
-    const viajes = await prisma.viaje.findMany({
-        include: { vehiculo: true, conductor: true, gastos: true },
-        orderBy: { fecha_salida: 'desc' }
-    });
-    return viajes.map(formatViaje);
+    try {
+        const viajes = await prisma.viaje.findMany({
+            include: { vehiculo: true, conductor: true, gastos: true },
+            orderBy: { fecha_salida: 'desc' }
+        });
+        if (!viajes) return [];
+        return viajes.map(formatViaje);
+    } catch (e) {
+        console.error("error getViajesAll:", e);
+        return [];
+    }
 }
 
 export async function getViajeActivo(idConductor: number): Promise<Viaje | null> {
-    noStore();
-    const viaje = await prisma.viaje.findFirst({
-        where: {
-            id_conductor: idConductor,
-            estado: 'en_ruta'
-        },
-        include: { vehiculo: true, gastos: true }
-    });
-    return viaje ? formatViaje(viaje) : null;
+    try {
+        const viaje = await prisma.viaje.findFirst({
+            where: {
+                id_conductor: idConductor,
+                estado: 'en_ruta'
+            },
+            include: { vehiculo: true, gastos: true }
+        });
+        return viaje ? formatViaje(viaje) : null;
+    } catch (e) {
+        console.error("error getViajeActivo:", e);
+        return null;
+    }
 }
 
 export async function iniciarViaje(data: {
