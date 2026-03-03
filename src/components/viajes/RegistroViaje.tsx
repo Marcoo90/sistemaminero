@@ -29,8 +29,20 @@ export default function RegistroViaje({ idConductor, onViajeIniciado }: Props) {
 
     useEffect(() => {
         const loadVehiculos = async () => {
-            const data = await getVehiculosAll();
-            setVehiculos(data.filter(v => v.estado === 'operativo'));
+            try {
+                setLoading(true);
+                const data = await getVehiculosAll();
+                console.log('Vehículos cargados:', data);
+                const operative = data.filter(v => v.estado === 'operativo');
+                setVehiculos(operative);
+                if (data.length > 0 && operative.length === 0) {
+                    console.warn('Se encontraron vehículos pero ninguno está en estado "operativo".');
+                }
+            } catch (error) {
+                console.error('Error al cargar vehículos:', error);
+            } finally {
+                setLoading(false);
+            }
         };
         loadVehiculos();
     }, []);
