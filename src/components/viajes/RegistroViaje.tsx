@@ -33,10 +33,13 @@ export default function RegistroViaje({ idConductor, onViajeIniciado }: Props) {
                 setLoading(true);
                 const data = await getVehiculosAll();
                 console.log('Vehículos cargados:', data);
-                const operative = data.filter(v => v.estado === 'operativo');
+                // Filtro robusto: ignora mayúsculas y espacios en blanco
+                const operative = data.filter(v =>
+                    v.estado.trim().toLowerCase() === 'operativo'
+                );
                 setVehiculos(operative);
                 if (data.length > 0 && operative.length === 0) {
-                    console.warn('Se encontraron vehículos pero ninguno está en estado "operativo".');
+                    console.warn('Se encontraron vehículos pero ninguno está en estado "operativo" (exacto). Verifique mayúsculas o espacios.');
                 }
             } catch (error) {
                 console.error('Error al cargar vehículos:', error);
