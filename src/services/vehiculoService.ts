@@ -6,27 +6,35 @@ import { unstable_noStore as noStore } from 'next/cache';
 
 import { toPeruDate, toPeruTime } from '@/lib/dateUtils';
 
-const formatVehiculo = (v: any): Vehiculo => ({
-    id_vehiculo: v.id_vehiculo,
-    codigo_vehiculo: v.codigo_vehiculo,
-    tipo: v.tipo,
-    marca: v.marca,
-    modelo: v.modelo,
-    anio: v.anio,
-    placa: v.placa,
-    vin: v.vin,
-    combustible: v.combustible_tipo || v.combustible,
-    capacidad: v.capacidad,
-    estado: v.estado,
-    id_area: v.id_area,
-    km_horometro: v.km_horometro,
-    km_mantenimiento: v.km_mantenimiento,
-    soat: v.soat,
-    seguro: v.seguro,
-    revision_tecnica: v.revision_tecnica,
-    observaciones: v.observaciones,
-    fecha_registro: v.fecha_registro ? toPeruTime(v.fecha_registro) : ''
-});
+const formatVehiculo = (v: any): Vehiculo => {
+    try {
+        return {
+            id_vehiculo: v.id_vehiculo || 0,
+            codigo_vehiculo: v.codigo_vehiculo || '',
+            tipo: v.tipo || '',
+            marca: v.marca || '',
+            modelo: v.modelo || '',
+            anio: v.anio || 0,
+            placa: v.placa || '',
+            vin: v.vin || '',
+            combustible: (v.combustible_tipo || v.combustible || 'diesel') as any,
+            capacidad: v.capacidad || '',
+            // Normalización crítica: siempre a minúsculas y sin espacios
+            estado: (v.estado ? v.estado.toString().trim().toLowerCase() : 'operativo') as any,
+            id_area: v.id_area || 0,
+            km_horometro: v.km_horometro || 0,
+            km_mantenimiento: v.km_mantenimiento || 0,
+            soat: v.soat || '',
+            seguro: v.seguro || '',
+            revision_tecnica: v.revision_tecnica || '',
+            observaciones: v.observaciones || '',
+            fecha_registro: v.fecha_registro ? toPeruTime(v.fecha_registro) : ''
+        };
+    } catch (e) {
+        console.error("Error formatting vehiculo:", e);
+        return v;
+    }
+};
 
 const formatCombustible = (c: any): Combustible => ({
     ...c,
@@ -48,24 +56,29 @@ export async function getVehiculosAll(): Promise<Vehiculo[]> {
 }
 
 export async function createVehiculo(data: Omit<Vehiculo, 'id_vehiculo'>): Promise<Vehiculo> {
-    const { id_vehiculo, combustible, ...vehiculoData } = data as any;
+    try {
+        const { id_vehiculo, combustible, ...vehiculoData } = data as any;
 
-    const idArea = Number(data.id_area);
-    if (isNaN(idArea)) throw new Error("ID de área inválido");
+        const idArea = Number(data.id_area);
+        if (isNaN(idArea)) throw new Error("ID de área inválido");
 
-    const created = await prisma.vehiculo.create({
-        data: {
-            ...vehiculoData,
-            id_area: idArea,
-            anio: data.anio ? Number(data.anio) : null,
-            km_horometro: Number(data.km_horometro) || 0,
-            km_mantenimiento: Number(data.km_mantenimiento) || 0,
-            combustible_tipo: combustible,
-            estado: data.estado as string,
-            fecha_registro: new Date()
-        }
-    });
-    return formatVehiculo(created);
+        const created = await prisma.vehiculo.create({
+            data: {
+                ...vehiculoData,
+                id_area: idArea,
+                anio: data.anio ? Number(data.anio) : null,
+                km_horometro: Number(data.km_horometro) || 0,
+                km_mantenimiento: Number(data.km_mantenimiento) || 0,
+                combustible_tipo: combustible,
+                estado: data.estado ? data.estado.toString().trim().toLowerCase() : 'operativo',
+                fecha_registro: new Date()
+            }
+        });
+        return formatVehiculo(created);
+    } catch (error: any) {
+        console.error("FATAL_ERROR (createVehiculo):", error);
+        throw new Error(error.message || "Error al registrar el vehículo en la base de datos.");
+    }
 }
 
 export async function deleteVehiculo(id: number): Promise<void> {
