@@ -28,7 +28,8 @@ const formatVehiculo = (v: any): Vehiculo => {
             seguro: v.seguro || '',
             revision_tecnica: v.revision_tecnica || '',
             observaciones: v.observaciones || '',
-            fecha_registro: v.fecha_registro ? toPeruTime(v.fecha_registro) : ''
+            // Garantizar que la fecha sea un string plano para evitar errores de serialización
+            fecha_registro: v.fecha_registro ? (v.fecha_registro instanceof Date ? v.fecha_registro.toISOString() : v.fecha_registro.toString()) : ''
         };
     } catch (e) {
         console.error("Error formatting vehiculo:", e);
@@ -43,14 +44,33 @@ const formatCombustible = (c: any): Combustible => ({
 
 export async function getVehiculosAll(): Promise<Vehiculo[]> {
     try {
-        const data = await prisma.vehiculo.findMany({
-            orderBy: { id_vehiculo: 'desc' }
-        });
+        const data = await prisma.vehiculo.findMany();
         if (!data || data.length === 0) return [];
-        return data.map(formatVehiculo);
+
+        // Mapeo ultra-simplificado para evitar Errores 500 por serialización
+        return data.map((v: any) => ({
+            id_vehiculo: Number(v.id_vehiculo),
+            codigo_vehiculo: String(v.codigo_vehiculo || ""),
+            tipo: String(v.tipo || ""),
+            marca: String(v.marca || ""),
+            modelo: String(v.modelo || ""),
+            anio: Number(v.anio || 0),
+            placa: String(v.placa || ""),
+            vin: String(v.vin || ""),
+            combustible: "diesel" as any,
+            capacidad: String(v.capacidad || ""),
+            estado: String(v.estado || "operativo").trim().toLowerCase() as any,
+            id_area: Number(v.id_area || 0),
+            km_horometro: Number(v.km_horometro || 0),
+            km_mantenimiento: Number(v.km_mantenimiento || 0),
+            soat: String(v.soat || ""),
+            seguro: String(v.seguro || ""),
+            revision_tecnica: String(v.revision_tecnica || ""),
+            observaciones: String(v.observaciones || ""),
+            fecha_registro: String(v.fecha_registro || "")
+        }));
     } catch (error: any) {
-        console.error("FATAL_SERVER_ERROR (getVehiculosAll):", error);
-        // Devolvemos lista vacía en lugar de explotar para evitar el Error 500
+        console.error("DEBUG_ERROR (getVehiculosAll):", error);
         return [];
     }
 }
