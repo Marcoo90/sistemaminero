@@ -20,7 +20,6 @@ const formatCombustible = (c: any): Combustible => ({
 
 export async function getVehiculosAll(): Promise<Vehiculo[]> {
     try {
-        if (typeof noStore === 'function') noStore();
         const data = await prisma.vehiculo.findMany();
         if (!data) return [];
         return data.map(formatVehiculo);

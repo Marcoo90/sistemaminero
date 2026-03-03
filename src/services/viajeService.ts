@@ -126,22 +126,23 @@ export async function subirComprobante(formData: FormData): Promise<string> {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 2. Procesar con SHARP para optimizar (Importación dinámica para evitar fallos en Server Components)
+    // --- TEMPORAL: DESACTIVAMOS SHARP PARA DIAGNÓSTICO ---
+    /*
     const sharp = (await import('sharp')).default;
-
-    // - Redimensionamos a un ancho máximo de 1200px
-    // - Convertimos a formato WebP (más ligero que JPG/PNG)
-    // - Calidad del 80% (mantiene perfecta legibilidad)
     const processedBuffer = await sharp(buffer)
         .resize({ width: 1200, withoutEnlargement: true })
         .webp({ quality: 80 })
         .toBuffer();
+    */
+    const processedBuffer = buffer; // Pasamos el original directamente
+    const contentType = file.type || 'image/jpeg';
+    // --- ------------------------------------------- ---
 
-    // 3. Subir el Buffer optimizado a Supabase Storage
+    // 3. Subir el Buffer (sin optimizar ahora) a Supabase Storage
     const { data, error } = await supabase.storage
         .from('comprobantes')
         .upload(filename, processedBuffer, {
-            contentType: 'image/webp',
+            contentType: contentType,
             cacheControl: '3600',
             upsert: false
         });
