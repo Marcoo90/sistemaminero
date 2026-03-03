@@ -77,27 +77,44 @@ export async function getVehiculosAll(): Promise<Vehiculo[]> {
 
 export async function createVehiculo(data: Omit<Vehiculo, 'id_vehiculo'>): Promise<Vehiculo> {
     try {
-        const { id_vehiculo, combustible, ...vehiculoData } = data as any;
-
         const idArea = Number(data.id_area);
         if (isNaN(idArea)) throw new Error("ID de área inválido");
 
+        // Creamos el objeto explícitamente para evitar campos 'null' o 'undefined' que Prisma rechace
+        // o campos extra que vengan del formulario.
         const created = await prisma.vehiculo.create({
             data: {
-                ...vehiculoData,
-                id_area: idArea,
+                codigo_vehiculo: data.codigo_vehiculo?.toString().trim() || "",
+                tipo: data.tipo?.toString() || "",
+                marca: data.marca?.toString() || "",
+                modelo: data.modelo?.toString() || "",
                 anio: data.anio ? Number(data.anio) : null,
+                placa: data.placa?.trim() || null, // null permite duplicados, "" no.
+                vin: data.vin?.trim() || null,     // null permite duplicados, "" no.
+                combustible_tipo: (data as any).combustible || "diesel",
+                capacidad: data.capacidad?.toString() || "",
+                estado: data.estado ? data.estado.toString().trim().toLowerCase() : 'operativo',
+                id_area: idArea,
                 km_horometro: Number(data.km_horometro) || 0,
                 km_mantenimiento: Number(data.km_mantenimiento) || 0,
-                combustible_tipo: combustible,
-                estado: data.estado ? data.estado.toString().trim().toLowerCase() : 'operativo',
+                soat: data.soat?.toString() || "",
+                seguro: data.seguro?.toString() || "",
+                revision_tecnica: data.revision_tecnica?.toString() || "",
+                observaciones: data.observaciones?.toString() || "",
                 fecha_registro: new Date()
             }
         });
+
         return formatVehiculo(created);
     } catch (error: any) {
-        console.error("FATAL_ERROR (createVehiculo):", error);
-        throw new Error(error.message || "Error al registrar el vehículo en la base de datos.");
+        console.error("CREATE_VEHICULO_ERROR:", error);
+
+        if (error.code === 'P2002') {
+            const field = error.meta?.target || "campo único";
+            throw new Error(`Ya existe un vehículo con este ${field}. Verifica la placa, código o VIN.`);
+        }
+
+        throw new Error(error.message || "Error interno al registrar el vehículo.");
     }
 }
 
@@ -117,6 +134,10 @@ export async function updateVehiculo(id: number, data: Partial<Vehiculo>): Promi
     if (data.anio !== undefined) updateData.anio = Number(data.anio);
     if (data.km_horometro !== undefined) updateData.km_horometro = Number(data.km_horometro);
     if (data.km_mantenimiento !== undefined) updateData.km_mantenimiento = Number(data.km_mantenimiento);
+
+    // Corregir restricción única en actualización: si es vacío, enviar null
+    if (data.vin !== undefined) updateData.vin = data.vin?.trim() || null;
+    if (data.placa !== undefined) updateData.placa = data.placa?.trim() || null;
 
     const updated = await prisma.vehiculo.update({
         where: { id_vehiculo: id },
