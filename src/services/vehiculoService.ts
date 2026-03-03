@@ -7,9 +7,24 @@ import { unstable_noStore as noStore } from 'next/cache';
 import { toPeruDate, toPeruTime } from '@/lib/dateUtils';
 
 const formatVehiculo = (v: any): Vehiculo => ({
-    ...v,
-    combustible: v.combustible_tipo as Vehiculo['combustible'],
-    estado: v.estado as Vehiculo['estado'],
+    id_vehiculo: v.id_vehiculo,
+    codigo_vehiculo: v.codigo_vehiculo,
+    tipo: v.tipo,
+    marca: v.marca,
+    modelo: v.modelo,
+    anio: v.anio,
+    placa: v.placa,
+    vin: v.vin,
+    combustible: v.combustible_tipo || v.combustible,
+    capacidad: v.capacidad,
+    estado: v.estado,
+    id_area: v.id_area,
+    km_horometro: v.km_horometro,
+    km_mantenimiento: v.km_mantenimiento,
+    soat: v.soat,
+    seguro: v.seguro,
+    revision_tecnica: v.revision_tecnica,
+    observaciones: v.observaciones,
     fecha_registro: v.fecha_registro ? toPeruTime(v.fecha_registro) : ''
 });
 

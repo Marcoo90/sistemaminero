@@ -10,10 +10,27 @@ import { supabase } from '@/lib/supabase';
 const formatViaje = (v: any): Viaje => {
     try {
         return {
-            ...v,
+            id_viaje: v.id_viaje,
+            id_vehiculo: v.id_vehiculo,
+            id_conductor: v.id_conductor,
+            origen: v.origen,
+            destino: v.destino,
+            km_inicial: v.km_inicial,
+            km_final: v.km_final,
             fecha_salida: v.fecha_salida instanceof Date ? v.fecha_salida.toISOString() : new Date(v.fecha_salida).toISOString(),
             fecha_retorno: v.fecha_retorno ? (v.fecha_retorno instanceof Date ? v.fecha_retorno.toISOString() : new Date(v.fecha_retorno).toISOString()) : null,
-            estado: v.estado as Viaje['estado']
+            estado: v.estado as Viaje['estado'],
+            // Las relaciones se incluyen solo si existen y con el mismo formato limpio
+            vehiculo: v.vehiculo ? {
+                id_vehiculo: v.vehiculo.id_vehiculo,
+                placa: v.vehiculo.placa,
+                codigo_vehiculo: v.vehiculo.codigo_vehiculo
+            } as any : undefined,
+            conductor: v.conductor ? {
+                id_personal: v.conductor.id_personal,
+                nombres: v.conductor.nombres
+            } as any : undefined,
+            gastos: v.gastos ? v.gastos.map(formatGasto) : []
         };
     } catch (e) {
         console.error("Error formatting viaje:", e);
@@ -21,10 +38,22 @@ const formatViaje = (v: any): Viaje => {
     }
 };
 
-const formatGasto = (g: any): GastoViaje => ({
-    ...g,
-    fecha: g.fecha.toISOString(),
-});
+const formatGasto = (g: any): GastoViaje => {
+    try {
+        return {
+            id_gasto: g.id_gasto,
+            id_viaje: g.id_viaje,
+            tipo: g.tipo,
+            monto: g.monto,
+            fecha: g.fecha instanceof Date ? g.fecha.toISOString() : new Date(g.fecha).toISOString(),
+            foto_url: g.foto_url,
+            observaciones: g.observaciones
+        };
+    } catch (e) {
+        console.error("Error formatting gasto:", e);
+        return g;
+    }
+};
 
 export async function getViajesByConductor(idConductor: number): Promise<Viaje[]> {
     noStore();
