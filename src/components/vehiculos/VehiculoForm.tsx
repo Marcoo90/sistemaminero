@@ -107,6 +107,7 @@ export default function VehiculoForm({ initialData, onSave, onCancel }: Vehiculo
 
                     <Input label="Kilometraje/Horómetro" name="km_horometro" type="number" value={formData.km_horometro} onChange={handleChange} />
                     <Input label="Próximo Mant. (KM)" name="km_mantenimiento" type="number" value={formData.km_mantenimiento} onChange={handleChange} />
+                    <Input label="VIN (Chasis)" name="vin" value={formData.vin} onChange={handleChange} placeholder="Opcional" />
                     <Input label="SOAT" name="soat" value={formData.soat} onChange={handleChange} />
                 </div>
 

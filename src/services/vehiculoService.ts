@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { Vehiculo, MantenimientoVehiculo, Combustible } from '@/types';
-import { unstable_noStore as noStore } from 'next/cache';
+import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
 
 import { toPeruDate, toPeruTime } from '@/lib/dateUtils';
 
@@ -105,6 +105,7 @@ export async function createVehiculo(data: Omit<Vehiculo, 'id_vehiculo'>): Promi
             }
         });
 
+        revalidatePath('/'); // Forzar actualización en todas las páginas (bitácora, admin, etc)
         return formatVehiculo(created);
     } catch (error: any) {
         console.error("CREATE_VEHICULO_ERROR:", error);
@@ -143,6 +144,7 @@ export async function updateVehiculo(id: number, data: Partial<Vehiculo>): Promi
         where: { id_vehiculo: id },
         data: updateData
     });
+    revalidatePath('/'); // Forzar actualización
     return formatVehiculo(updated);
 }
 
