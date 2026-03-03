@@ -19,9 +19,17 @@ const formatCombustible = (c: any): Combustible => ({
 });
 
 export async function getVehiculosAll(): Promise<Vehiculo[]> {
-    noStore();
-    const data = await prisma.vehiculo.findMany();
-    return data.map(formatVehiculo);
+    try {
+        if (typeof noStore === 'function') noStore();
+        const data = await prisma.vehiculo.findMany();
+        if (!data) return [];
+        return data.map(formatVehiculo);
+    } catch (error: any) {
+        console.error("SERVER_ERROR (getVehiculosAll):", error);
+        // En producción no queremos filtrar el error exacto hacia el cliente por seguridad, 
+        // pero lanzamos una excepción controlada que Next.js capturará.
+        throw new Error("No se pudo conectar con la base de datos de vehículos.");
+    }
 }
 
 export async function createVehiculo(data: Omit<Vehiculo, 'id_vehiculo'>): Promise<Vehiculo> {

@@ -4,15 +4,22 @@ import { prisma } from '@/lib/prisma';
 import { Viaje, GastoViaje } from '@/types';
 import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { supabase } from '@/lib/supabase';
-import sharp from 'sharp';
+// import sharp from 'sharp'; // Mantenemos fuera para evitar carga en SSR
 
 // Helper for date formatting
-const formatViaje = (v: any): Viaje => ({
-    ...v,
-    fecha_salida: v.fecha_salida.toISOString(),
-    fecha_retorno: v.fecha_retorno?.toISOString() || null,
-    estado: v.estado as Viaje['estado']
-});
+const formatViaje = (v: any): Viaje => {
+    try {
+        return {
+            ...v,
+            fecha_salida: v.fecha_salida instanceof Date ? v.fecha_salida.toISOString() : new Date(v.fecha_salida).toISOString(),
+            fecha_retorno: v.fecha_retorno ? (v.fecha_retorno instanceof Date ? v.fecha_retorno.toISOString() : new Date(v.fecha_retorno).toISOString()) : null,
+            estado: v.estado as Viaje['estado']
+        };
+    } catch (e) {
+        console.error("Error formatting viaje:", e);
+        return v;
+    }
+};
 
 const formatGasto = (g: any): GastoViaje => ({
     ...g,
@@ -119,7 +126,9 @@ export async function subirComprobante(formData: FormData): Promise<string> {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 2. Procesar con SHARP para optimizar
+    // 2. Procesar con SHARP para optimizar (Importación dinámica para evitar fallos en Server Components)
+    const sharp = (await import('sharp')).default;
+
     // - Redimensionamos a un ancho máximo de 1200px
     // - Convertimos a formato WebP (más ligero que JPG/PNG)
     // - Calidad del 80% (mantiene perfecta legibilidad)
