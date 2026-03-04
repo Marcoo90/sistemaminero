@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { Viaje, GastoViaje } from '@/types';
 import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 // import sharp from 'sharp'; // Mantenemos fuera para evitar carga en SSR
 
 // Helper for date formatting
