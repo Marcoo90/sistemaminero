@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Asistencia, Personal } from '@/types';
 import { getAsistenciasByMonth, upsertAsistencia } from '@/services/asistenciaService';
-import { getPersonalAll } from '@/services/personalService';
+import { getPersonalAll, getAreasAll } from '@/services/personalService';
 import { Button } from '@/components/ui/Button';
 import StatCard from '@/components/ui/StatCard';
 import AttendanceGrid from '@/components/asistencia/AttendanceGrid';
@@ -15,6 +15,8 @@ import { useAuth } from '@/context/AuthContext';
 export default function AsistenciasPage() {
     const [asistencias, setAsistencias] = useState<Asistencia[]>([]);
     const [personal, setPersonal] = useState<Personal[]>([]);
+    const [areas, setAreas] = useState<any[]>([]);
+    const [areaFilter, setAreaFilter] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [month, setMonth] = useState(0); // 0 = Jan
     const [year] = useState(2026);
@@ -42,12 +44,14 @@ export default function AsistenciasPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [pData, aData] = await Promise.all([
+            const [pData, aData, areasData] = await Promise.all([
                 getPersonalAll(),
-                getAsistenciasByMonth(month, year)
+                getAsistenciasByMonth(month, year),
+                getAreasAll()
             ]);
             setPersonal(pData);
             setAsistencias(aData);
+            setAreas(areasData);
         } catch (err) {
             console.error(err);
         } finally {
@@ -99,6 +103,11 @@ export default function AsistenciasPage() {
     const nextMonth = () => setMonth(m => (m + 1) % 12);
     const prevMonth = () => setMonth(m => (m - 1 + 12) % 12);
 
+    const filteredPersonal = React.useMemo(() => {
+        if (!areaFilter) return personal;
+        return personal.filter(p => p.id_area.toString() === areaFilter);
+    }, [personal, areaFilter]);
+
     return (
         <div className="space-y-10 animate-fade-in">
             {/* SaaS Header Section */}
@@ -116,16 +125,34 @@ export default function AsistenciasPage() {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4 bg-card p-2 rounded-2xl border border-border shadow-sm">
-                    <button onClick={prevMonth} className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition-all">
-                        <ChevronLeft size={18} strokeWidth={3} />
-                    </button>
-                    <div className="min-w-[120px] text-center font-black text-foreground tracking-tighter uppercase text-xs">
-                        {meses[month]}
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                    {/* Area Filter */}
+                    <div className="w-full md:w-64 bg-card rounded-2xl border border-border px-4 py-1.5 shadow-sm">
+                        <select
+                            value={areaFilter}
+                            onChange={(e) => setAreaFilter(e.target.value)}
+                            className="w-full bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-slate-500 focus:ring-0 cursor-pointer"
+                        >
+                            <option value="">Todas las Áreas</option>
+                            {areas.map(a => (
+                                <option key={a.id_area} value={a.id_area.toString()}>
+                                    {a.nombre_area}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                    <button onClick={nextMonth} className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition-all">
-                        <ChevronRight size={18} strokeWidth={3} />
-                    </button>
+
+                    <div className="flex items-center gap-4 bg-card p-2 rounded-2xl border border-border shadow-sm">
+                        <button onClick={prevMonth} className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition-all">
+                            <ChevronLeft size={18} strokeWidth={3} />
+                        </button>
+                        <div className="min-w-[120px] text-center font-black text-foreground tracking-tighter uppercase text-xs">
+                            {meses[month]}
+                        </div>
+                        <button onClick={nextMonth} className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition-all">
+                            <ChevronRight size={18} strokeWidth={3} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -209,7 +236,7 @@ export default function AsistenciasPage() {
                         <AttendanceGrid
                             month={month}
                             year={year}
-                            personal={personal}
+                            personal={filteredPersonal}
                             asistencias={asistencias}
                             onToggleShift={isReadOnly ? () => { } : handleToggleShift}
                             onUpdateStatus={isReadOnly ? () => { } : handleUpdateStatus}

@@ -267,15 +267,19 @@ export default function PersonalPage() {
                 )}
             </div>
 
-            <Modal open={view === 'form'} title={editingId ? 'Actualizar Colaborador' : 'Registrar Nuevo Colaborador'} onClose={() => setView('list')}>
-                <div className="p-8">
-                    <PersonalForm
-                        initialData={initialPersonal}
-                        onSave={handleSave}
-                        onCancel={() => setView('list')}
-                    />
-                </div>
+            <Modal
+                open={view === 'form'}
+                title={editingId ? 'Actualizar Colaborador' : 'Registrar Nuevo Colaborador'}
+                onClose={() => setView('list')}
+                size="xl"
+            >
+                <PersonalForm
+                    initialData={initialPersonal}
+                    onSave={handleSave}
+                    onCancel={() => setView('list')}
+                />
             </Modal>
+
         </div>
     );
 }

@@ -107,81 +107,80 @@ export default function PersonalForm({ initialData, onSave, onCancel }: Personal
     ];
 
     return (
-        <form onSubmit={handleSubmit} className="card">
-            <div className="card-header">
-                <h2 className="text-lg font-semibold">{initialData ? 'Editar Personal' : 'Nuevo Personal'}</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <Input
+                    label="DNI"
+                    name="dni"
+                    value={formData.dni}
+                    onChange={handleChange}
+                    error={errors.dni}
+                    placeholder="8 dígitos"
+                />
+                <Input
+                    label="Nombres Completos"
+                    name="nombres"
+                    value={formData.nombres}
+                    onChange={handleChange}
+                    error={errors.nombres}
+                    placeholder="Nombres y apellidos"
+                />
+                <Input
+                    label="Cargo"
+                    name="cargo"
+                    value={formData.cargo}
+                    onChange={handleChange}
+                    error={errors.cargo}
+                    placeholder="Puesto de trabajo"
+                />
+                <Select
+                    label="Área"
+                    name="id_area"
+                    value={formData.id_area}
+                    onChange={handleChange}
+                    error={errors.id_area}
+                    options={areaOptions}
+                />
+                <Input
+                    label="Régimen"
+                    name="regimen"
+                    value={formData.regimen}
+                    onChange={handleChange}
+                    placeholder="Ej. 14x7"
+                />
+                <Input
+                    label="Fecha Ingreso"
+                    name="fecha_ingreso"
+                    type="date"
+                    value={formData.fecha_ingreso}
+                    onChange={handleChange}
+                />
+                <Input
+                    label="Teléfono / Celular"
+                    name="telefono"
+                    value={formData.telefono}
+                    onChange={handleChange}
+                    error={errors.telefono}
+                    placeholder="9 dígitos"
+                />
+                <Select
+                    label="Estado"
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleChange}
+                    options={estadoOptions}
+                />
             </div>
-            <div className="card-body">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input
-                        label="DNI"
-                        name="dni"
-                        value={formData.dni}
-                        onChange={handleChange}
-                        error={errors.dni}
-                    />
-                    <Input
-                        label="Nombres Completos"
-                        name="nombres"
-                        value={formData.nombres}
-                        onChange={handleChange}
-                        error={errors.nombres}
-                    />
-                    <Input
-                        label="Cargo"
-                        name="cargo"
-                        value={formData.cargo}
-                        onChange={handleChange}
-                        error={errors.cargo}
-                    />
-                    <Select
-                        label="Área"
-                        name="id_area"
-                        value={formData.id_area}
-                        onChange={handleChange}
-                        error={errors.id_area}
-                        options={areaOptions}
-                    />
-                    <Input
-                        label="Régimen"
-                        name="regimen"
-                        value={formData.regimen}
-                        onChange={handleChange}
-                        placeholder="Ej. 14x7"
-                    />
-                    <Input
-                        label="Fecha Ingreso"
-                        name="fecha_ingreso"
-                        type="date"
-                        value={formData.fecha_ingreso}
-                        onChange={handleChange}
-                    />
-                    <Input
-                        label="Teléfono / Celular (9 dígitos)"
-                        name="telefono"
-                        value={formData.telefono}
-                        onChange={handleChange}
-                        error={errors.telefono}
-                        placeholder="Ej. 912345678"
-                    />
-                    <Select
-                        label="Estado"
-                        name="estado"
-                        value={formData.estado}
-                        onChange={handleChange}
-                        options={estadoOptions}
-                    />
-                </div>
 
-                <div className="flex justify-end gap-3 mt-4">
-                    <Button type="button" variant="ghost" onClick={onCancel} disabled={loading}>
-                        Cancelar
-                    </Button>
-                    <Button type="submit" isLoading={loading}>
-                        Guardar
-                    </Button>
-                </div>
+            <div className="flex justify-end gap-3 pt-4 border-t border-border/50">
+                <Button type="button" variant="ghost" onClick={onCancel} disabled={loading} className="font-bold">
+                    Cancelar
+                </Button>
+                <Button type="submit" isLoading={loading} className="px-8 font-bold">
+                    {initialData ? 'Actualizar Registro' : 'Guardar Registro'}
+                </Button>
             </div>
         </form>
     );
 }
+

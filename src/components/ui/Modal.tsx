@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -22,7 +23,19 @@ export default function Modal({
   size = 'md',
   closeOnBackdrop = true
 }: ModalProps) {
-  if (!open) return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [open]);
+
+  if (!open || !mounted) return null;
 
   const sizeClasses = {
     sm: 'max-w-sm',
@@ -31,13 +44,13 @@ export default function Modal({
     xl: 'max-w-2xl'
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div
-        className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-300"
         onClick={() => closeOnBackdrop && onClose?.()}
       />
-      <div className={`relative bg-card border border-border w-full ${sizeClasses[size]} mx-auto rounded-2xl overflow-hidden shadow-2xl transform transition-all`}>
+      <div className={`relative bg-card border border-border w-full ${sizeClasses[size]} mx-auto rounded-2xl overflow-hidden shadow-2xl transform transition-all animate-in zoom-in-95 duration-200`}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <h2 className="text-xl font-bold text-foreground">{title}</h2>
           {onClose && (
@@ -50,15 +63,18 @@ export default function Modal({
             </button>
           )}
         </div>
-        <div className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+        <div className="p-6 max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar">
           {children}
         </div>
         {footer && (
-          <div className="px-6 py-4 border-t border-border bg-slate-800/20 flex justify-end gap-3">
+          <div className="px-6 py-4 border-t border-border bg-slate-800/5 flex justify-end gap-3">
             {footer}
           </div>
         )}
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
+
