@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { Viaje, GastoViaje } from '@/types';
 import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 // import sharp from 'sharp'; // Mantenemos fuera para evitar carga en SSR
 
 // Helper for date formatting
@@ -188,8 +188,8 @@ export async function subirComprobante(formData: FormData): Promise<string> {
 
     const filename = `${Date.now()}_comprobante.${finalExtension}`;
 
-    // 3. Subir a Supabase Storage
-    const { data, error } = await supabase.storage
+    // 3. Subir a Supabase Storage usando el cliente ADMINISTRATIVO (salta RLS)
+    const { data, error } = await supabaseAdmin.storage
         .from('comprobantes')
         .upload(filename, processedBuffer, {
             contentType: contentType,
@@ -203,7 +203,7 @@ export async function subirComprobante(formData: FormData): Promise<string> {
     }
 
     // Obtener la URL pública de la imagen
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl } } = supabaseAdmin.storage
         .from('comprobantes')
         .getPublicUrl(filename);
 
