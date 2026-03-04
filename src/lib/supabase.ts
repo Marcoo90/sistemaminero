@@ -7,7 +7,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Cliente administrativo (SOLO PARA USO EN SERVIDOR)
 // Este cliente salta las políticas RLS. 
-// NUNCA usar en archivos con "use client".
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn("ADVERTENCIA: SUPABASE_SERVICE_ROLE_KEY no está definida. Las subidas de archivos podrían fallar.");
+}
+
 export const supabaseAdmin = createClient(
     supabaseUrl,
     process.env.SUPABASE_SERVICE_ROLE_KEY || ''
