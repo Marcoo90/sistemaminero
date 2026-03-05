@@ -9,8 +9,8 @@ import { Table } from '@/components/ui/Table';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { getPersonalAll, registrarEntregaEPP, getEntregaEPPAll, getAreasAll, deleteEntregaEPP } from '@/services/personalService';
-import { getMaterialesAll, getAlmacenesAll, getCategoriasAll } from '@/services/almacenService';
-import { Personal, Material, Almacen, CategoriaMaterial, Area } from '@/types';
+import { getMaterialesAll, getAlmacenesAll, getCategoriasAll, getStockByAlmacen } from '@/services/almacenService';
+import { Personal, Material, Almacen, CategoriaMaterial, Area, StockMaterial } from '@/types';
 import Link from 'next/link';
 import { generateEPPPDF } from '@/utils/reportGenerators';
 import { Badge } from '@/components/ui/Badge';
@@ -26,6 +26,7 @@ export default function EntregaEPPPage() {
     const [categorias, setCategorias] = useState<CategoriaMaterial[]>([]);
     const [almacenes, setAlmacenes] = useState<Almacen[]>([]);
     const [selectedCategoria, setSelectedCategoria] = useState<string>('');
+    const [stocks, setStocks] = useState<StockMaterial[]>([]);
     const pathname = usePathname();
     const router = useRouter();
     const { user, canEdit, hasAccess } = useAuth();
@@ -62,6 +63,22 @@ export default function EntregaEPPPage() {
         fetchHistory();
     }, []);
 
+    useEffect(() => {
+        const fetchStocks = async () => {
+            if (entrega.id_almacen) {
+                try {
+                    const s = await getStockByAlmacen(parseInt(entrega.id_almacen));
+                    setStocks(s || []);
+                } catch (error) {
+                    console.error(error);
+                }
+            } else {
+                setStocks([]);
+            }
+        };
+        fetchStocks();
+    }, [entrega.id_almacen]);
+
     const fetchHistory = async () => {
         setLoadingHistory(true);
         try {
@@ -90,11 +107,17 @@ export default function EntregaEPPPage() {
         if (c.length > 0) setSelectedCategoria(c[0].id_categoria.toString());
     };
 
-    const filteredMateriales = materiales.filter(m =>
-        !selectedCategoria || m.id_categoria.toString() === selectedCategoria
-    );
+    const filteredMateriales = materiales.filter(m => {
+        const matchesCategory = !selectedCategoria || m.id_categoria.toString() === selectedCategoria;
+        const hasStockInAlmacen = !entrega.id_almacen || stocks.some(s => s.id_material === m.id_material && s.stock_actual > 0);
+        return matchesCategory && hasStockInAlmacen;
+    });
 
     const handleAddItem = () => {
+        if (!entrega.id_almacen) {
+            alert('Debe seleccionar un almacén de origen primero.');
+            return;
+        }
         if (!currentItem.id_material) {
             alert('Seleccione un equipo de protección');
             return;
@@ -198,7 +221,26 @@ export default function EntregaEPPPage() {
                         icon={Package}
                     >
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                            <div className="md:col-span-3">
+                            <div className="md:col-span-12 lg:col-span-3">
+                                <Select
+                                    label="Almacén de Origen (Filtro)"
+                                    options={almacenes.map(a => ({ value: a.id_almacen.toString(), label: a.nombre }))}
+                                    value={entrega.id_almacen}
+                                    onChange={(e: any) => {
+                                        const newId = e.target.value;
+                                        if (items.length > 0 && newId !== entrega.id_almacen) {
+                                            if (confirm('Cambiar el almacén limpiará la lista de equipos seleccionados. ¿Desea continuar?')) {
+                                                setItems([]);
+                                                setEntrega({ ...entrega, id_almacen: newId });
+                                            }
+                                        } else {
+                                            setEntrega({ ...entrega, id_almacen: newId });
+                                        }
+                                    }}
+                                    required
+                                />
+                            </div>
+                            <div className="md:col-span-6 lg:col-span-3">
                                 <Select
                                     label="Categoría"
                                     options={categorias.map(c => ({ value: c.id_categoria.toString(), label: c.nombre }))}
@@ -206,7 +248,7 @@ export default function EntregaEPPPage() {
                                     onChange={(e: any) => setSelectedCategoria(e.target.value)}
                                 />
                             </div>
-                            <div className="md:col-span-4">
+                            <div className="md:col-span-6 lg:col-span-6">
                                 <Select
                                     label="Material / Equipo"
                                     options={filteredMateriales.map(m => ({ value: m.id_material.toString(), label: m.nombre }))}
@@ -214,7 +256,7 @@ export default function EntregaEPPPage() {
                                     onChange={(e: any) => setCurrentItem({ ...currentItem, id_material: e.target.value })}
                                 />
                             </div>
-                            <div className="md:col-span-2">
+                            <div className="md:col-span-4 lg:col-span-3">
                                 <Input
                                     label="Cantidad"
                                     type="number"
@@ -222,7 +264,7 @@ export default function EntregaEPPPage() {
                                     onChange={(e: any) => setCurrentItem({ ...currentItem, cantidad: parseInt(e.target.value) })}
                                 />
                             </div>
-                            <div className="md:col-span-3">
+                            <div className="md:col-span-4 lg:col-span-6">
                                 <Input
                                     label="Talla/Medida"
                                     value={currentItem.talla}
@@ -231,7 +273,7 @@ export default function EntregaEPPPage() {
                                 />
                             </div>
                             {!isReadOnly && (
-                                <div className="md:col-span-2">
+                                <div className="md:col-span-4 lg:col-span-3">
                                     <Button onClick={handleAddItem} icon={Plus} fullWidth className="font-black uppercase tracking-widest text-[10px]">Añadir</Button>
                                 </div>
                             )}
@@ -297,13 +339,6 @@ export default function EntregaEPPPage() {
                                 type="date"
                                 value={entrega.fecha}
                                 onChange={(e: any) => setEntrega({ ...entrega, fecha: e.target.value })}
-                            />
-                            <Select
-                                label="Almacén de Origen"
-                                options={almacenes.map(a => ({ value: a.id_almacen.toString(), label: a.nombre }))}
-                                value={entrega.id_almacen}
-                                onChange={(e: any) => setEntrega({ ...entrega, id_almacen: e.target.value })}
-                                required
                             />
 
                             <div className="flex items-center gap-3 p-4 bg-secondary/50 rounded-xl border border-border">
