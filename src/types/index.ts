@@ -204,6 +204,7 @@ export interface Material {
     area?: Area;
     estado: 'activo' | 'inactivo';
     fecha_registro?: string;
+    stocks?: StockMaterial[];
 }
 
 export interface IngresoMaterial {

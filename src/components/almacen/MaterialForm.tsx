@@ -33,7 +33,8 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
         estado: initialData?.estado || 'activo',
         precio: initialData?.precio || 0,
         stock_inicial: 0,
-        id_almacen: ''
+        id_almacen: '',
+        force_set_stock: false
     });
 
     useEffect(() => {
@@ -136,10 +137,15 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                     }}
                     placeholder="0.00"
                 />
-                {!formData.id_material && (
-                    <>
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/30 p-4 border border-blue-100 rounded-2xl">
+                    <div className="md:col-span-2">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-2 pl-1">
+                            {formData.id_material ? 'Actualizar Stock (Opcional)' : 'Stock Inicial / Reposición'}
+                        </h3>
+                    </div>
+                    <div className="space-y-2">
                         <Input
-                            label="Stock Inicial"
+                            label={formData.force_set_stock ? "Nuevo Stock Total" : (formData.id_material ? "Cantidad a Agregar" : "Stock Actual / Inicial")}
                             type="number"
                             value={formData.stock_inicial}
                             onChange={(e: any) => {
@@ -148,14 +154,31 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                             }}
                             placeholder="0"
                         />
-                        <Select
-                            label="Almacén para Stock"
-                            options={almacenes.map(a => ({ value: a.id_almacen.toString(), label: a.nombre }))}
-                            value={formData.id_almacen}
-                            onChange={(e: any) => setFormData({ ...formData, id_almacen: e.target.value })}
-                        />
-                    </>
-                )}
+                        {formData.id_material && (
+                            <label className="flex items-center gap-2 px-1 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 rounded-md border-border text-blue-600 focus:ring-blue-500"
+                                    checked={formData.force_set_stock}
+                                    onChange={(e) => setFormData({ ...formData, force_set_stock: e.target.checked })}
+                                />
+                                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">¿Sobrescribir valor total?</span>
+                            </label>
+                        )}
+                    </div>
+                    <Select
+                        label="Seleccionar Almacén"
+                        options={almacenes.map(a => ({ value: a.id_almacen.toString(), label: a.nombre }))}
+                        value={formData.id_almacen}
+                        onChange={(e: any) => setFormData({ ...formData, id_almacen: e.target.value })}
+                        required={formData.stock_inicial !== 0}
+                    />
+                    {formData.id_material && !formData.force_set_stock && formData.stock_inicial !== 0 && (
+                        <p className="md:col-span-2 text-[10px] font-bold text-amber-600 uppercase tracking-widest bg-amber-50 p-2 rounded-lg border border-amber-100">
+                            * Se sumarán {formData.stock_inicial} {formData.unidad_medida} al stock actual del almacén seleccionado.
+                        </p>
+                    )}
+                </div>
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-500 pl-1">Descripción</label>

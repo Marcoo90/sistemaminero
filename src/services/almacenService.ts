@@ -51,8 +51,11 @@ export async function getMaterialesAll(): Promise<Material[]> {
 }
 
 export async function getMaterialById(id: number): Promise<Material | undefined> {
-    const material = await prisma.material.findUnique({ where: { id_material: id } });
-    return material ? formatMaterial(material) : undefined;
+    const material = await prisma.material.findUnique({
+        where: { id_material: id },
+        include: { stocks: true }
+    });
+    return material ? (formatMaterial(material) as Material) : undefined;
 }
 
 export async function getStockByAlmacen(idAlmacen: number): Promise<StockMaterial[]> {
@@ -230,28 +233,83 @@ export async function registrarSalida(salida: Partial<SalidaMaterial>, detalles:
     return true;
 }
 
-export async function saveMaterial(data: Partial<Material> & { stock_inicial?: number, id_almacen?: number }): Promise<boolean> {
+export async function saveMaterial(data: Partial<Material> & { stock_inicial?: number, id_almacen?: number, force_set_stock?: boolean }): Promise<boolean> {
     const id = data.id_material ? Number(data.id_material) : null;
-    if (id && id > 0) {
-        await prisma.material.update({
-            where: { id_material: id },
-            data: {
-                codigo_material: data.codigo_material,
-                nombre: data.nombre,
-                id_categoria: data.id_categoria ? Number(data.id_categoria) : undefined,
-                unidad_medida: data.unidad_medida,
-                stock_minimo: data.stock_minimo !== undefined ? Number(data.stock_minimo) : undefined,
-                descripcion: data.descripcion,
-                id_area: data.id_area ? Number(data.id_area) : null,
-                precio: data.precio !== undefined ? Number(Number(data.precio).toFixed(2)) : undefined,
-                estado: data.estado as string
+
+    // Check if code already exists
+    const existingByCode = await prisma.material.findUnique({
+        where: { codigo_material: data.codigo_material },
+        include: { stocks: true }
+    });
+
+    // Determine target ID: provided ID OR found by code (for merges)
+    const targetId = id || existingByCode?.id_material;
+
+    if (targetId) {
+        // If editing by ID and code belongs to another material, throw
+        if (id && existingByCode && existingByCode.id_material !== id) {
+            throw new Error(`El código '${data.codigo_material}' ya pertenece a otro material (${existingByCode.nombre}).`);
+        }
+
+        await prisma.$transaction(async (tx: any) => {
+            await tx.material.update({
+                where: { id_material: targetId },
+                data: {
+                    codigo_material: data.codigo_material,
+                    nombre: data.nombre,
+                    id_categoria: data.id_categoria ? Number(data.id_categoria) : undefined,
+                    unidad_medida: data.unidad_medida,
+                    stock_minimo: data.stock_minimo !== undefined ? Number(data.stock_minimo) : undefined,
+                    descripcion: data.descripcion,
+                    id_area: data.id_area ? Number(data.id_area) : null,
+                    precio: data.precio !== undefined ? Number(Number(data.precio).toFixed(2)) : undefined,
+                    estado: data.estado as string
+                }
+            });
+
+            if (data.id_almacen) {
+                const stockValue = Number(data.stock_inicial || 0);
+
+                if (data.force_set_stock) {
+                    // Overwrite total stock
+                    await tx.stockMaterial.upsert({
+                        where: {
+                            id_material_id_almacen: {
+                                id_material: targetId,
+                                id_almacen: Number(data.id_almacen)
+                            }
+                        },
+                        update: { stock_actual: stockValue },
+                        create: {
+                            id_material: targetId,
+                            id_almacen: Number(data.id_almacen),
+                            stock_actual: stockValue
+                        }
+                    });
+                } else if (stockValue !== 0) {
+                    // Increment existing stock
+                    await tx.stockMaterial.upsert({
+                        where: {
+                            id_material_id_almacen: {
+                                id_material: targetId,
+                                id_almacen: Number(data.id_almacen)
+                            }
+                        },
+                        update: { stock_actual: { increment: stockValue } },
+                        create: {
+                            id_material: targetId,
+                            id_almacen: Number(data.id_almacen),
+                            stock_actual: stockValue
+                        }
+                    });
+                }
             }
+        }, {
+            maxWait: 10000,
+            timeout: 20000
         });
     } else {
-        // Check for duplicate code
-        const existing = await prisma.material.findUnique({ where: { codigo_material: data.codigo_material } });
-        if (existing) throw new Error(`El código '${data.codigo_material}' ya está en uso.`);
-
+        // Pure CREATE New
         await prisma.$transaction(async (tx: any) => {
             const material = await tx.material.create({
                 data: {
