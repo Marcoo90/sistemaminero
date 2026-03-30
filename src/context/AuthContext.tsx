@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const isAdminAccess = adminItems.some(item => path.startsWith(item));
         const isSharedAccess = sharedItems.some(item => path === item || path.startsWith(item + '/')) || path === '/';
 
-        if (role === 'logistica' || role === 'asistante_administrativo') {
+        if (role === 'logistica' || role === 'asistente_administrativo') {
             return isLogisticsAccess || isAdminAccess || isSharedAccess;
         }
 
