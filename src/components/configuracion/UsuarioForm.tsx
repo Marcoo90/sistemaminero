@@ -145,6 +145,8 @@ export default function UsuarioForm({ initialData, onSave, onCancel }: UsuarioFo
                             { value: 'gerente', label: 'Gerente (Ver Reportes)' },
                             { value: 'logistica', label: 'Logística' },
                             { value: 'almacenero', label: 'Almacenero' },
+                            { value: 'ing_seguridad', label: 'ING. de seguridad' },
+                            { value: 'ing_supervision_operacion_minera', label: 'ING. de supervision y operacion minera' },
                             { value: 'asistante_administrativo', label: 'Asistante Administrativo' },
                             { value: 'conductor', label: 'Conductor (Solo Viajes)' },
                         ]}

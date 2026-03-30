@@ -1,4 +1,4 @@
-export type Role = 'admin' | 'gerente' | 'logistica' | 'almacenero' | 'conductor' | 'asistente_administrativo' | 'user';
+export type Role = 'admin' | 'gerente' | 'logistica' | 'almacenero' | 'conductor' | 'asistente_administrativo' | 'user' | 'ing_seguridad' | 'ing_supervision_operacion_minera';
 
 export interface Usuario {
     id_usuario: number;

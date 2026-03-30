@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return isLogisticsAccess || isAdminAccess || isSharedAccess;
         }
 
-        if (role === 'almacenero') {
+        if (role === 'almacenero' || role === 'ing_seguridad' || role === 'ing_supervision_operacion_minera') {
             // Updated: Almacenero can see logistics/admin modules EXCEPT VIAJES. 
             // They can see Personal (Read-only)
             const isAdminNoViajes = adminItems.some(item => item !== '/viajes' && path.startsWith(item));
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (role === 'admin') return true;
         if (role === 'gerente' || role === 'gerencia') return false; // Strictly view only
 
-        if (role === 'almacenero') {
+        if (role === 'almacenero' || role === 'ing_seguridad' || role === 'ing_supervision_operacion_minera') {
             // Personal is read-only except EPP section
             if (path.startsWith('/personal')) {
                 return path.startsWith('/personal/epp');
