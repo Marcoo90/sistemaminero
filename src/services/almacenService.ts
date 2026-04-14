@@ -242,12 +242,16 @@ export async function saveMaterial(data: Partial<Material> & { stock_inicial?: n
         include: { stocks: true }
     });
 
+    if (!id && existingByCode) {
+        throw new Error(`El código de material '${data.codigo_material}' ya está registrado en el sistema. Utilice un código diferente o edite el material existente.`);
+    }
+
     // Determine target ID: provided ID OR found by code (for merges)
-    const targetId = id || existingByCode?.id_material;
+    const targetId = id;
 
     if (targetId) {
         // If editing by ID and code belongs to another material, throw
-        if (id && existingByCode && existingByCode.id_material !== id) {
+        if (existingByCode && existingByCode.id_material !== id) {
             throw new Error(`El código '${data.codigo_material}' ya pertenece a otro material (${existingByCode.nombre}).`);
         }
 
