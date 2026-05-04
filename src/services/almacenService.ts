@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 import {
     Almacen,
     CategoriaMaterial,
@@ -142,6 +143,7 @@ export async function registrarIngreso(ingreso: Partial<IngresoMaterial>, detall
         maxWait: 10000,
         timeout: 20000
     });
+    revalidatePath('/almacen', 'layout');
     return true;
 }
 
@@ -230,6 +232,7 @@ export async function registrarSalida(salida: Partial<SalidaMaterial>, detalles:
         maxWait: 10000,
         timeout: 20000
     });
+    revalidatePath('/almacen', 'layout');
     return true;
 }
 
@@ -344,6 +347,7 @@ export async function saveMaterial(data: Partial<Material> & { stock_inicial?: n
             timeout: 20000
         });
     }
+    revalidatePath('/almacen', 'layout');
     return true;
 }
 
@@ -364,6 +368,7 @@ export async function saveCategoria(data: Partial<CategoriaMaterial>): Promise<b
             }
         });
     }
+    revalidatePath('/almacen', 'layout');
     return true;
 }
 
@@ -388,6 +393,7 @@ export async function deleteMaterial(id: number): Promise<void> {
             maxWait: 10000,
             timeout: 20000
         });
+        revalidatePath('/almacen', 'layout');
     } catch (error: any) {
         console.error("Error al eliminar material:", error);
         throw new Error('Error al intentar eliminar el material y su historial relacionado.');
@@ -416,6 +422,7 @@ export async function saveAlmacen(data: Partial<Almacen>): Promise<boolean> {
             }
         });
     }
+    revalidatePath('/almacen', 'layout');
     return true;
 }
 
@@ -424,6 +431,7 @@ export async function deleteCategoria(id: number): Promise<void> {
         await prisma.categoriaMaterial.delete({
             where: { id_categoria: id }
         });
+        revalidatePath('/almacen', 'layout');
     } catch (error: any) {
         if (error.code === 'P2003') {
             throw new Error('No se puede eliminar la categoría: tiene materiales asociados.');
@@ -437,6 +445,7 @@ export async function deleteAlmacen(id: number): Promise<void> {
         await prisma.almacen.delete({
             where: { id_almacen: id }
         });
+        revalidatePath('/almacen', 'layout');
     } catch (error: any) {
         if (error.code === 'P2003') {
             throw new Error('No se puede eliminar el almacén: tiene materiales en stock o historial de movimientos vinculados.');

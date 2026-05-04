@@ -171,7 +171,7 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                         options={almacenes.map(a => ({ value: a.id_almacen.toString(), label: a.nombre }))}
                         value={formData.id_almacen}
                         onChange={(e: any) => setFormData({ ...formData, id_almacen: e.target.value })}
-                        required={formData.stock_inicial !== 0}
+                        required={formData.stock_inicial !== 0 || formData.force_set_stock}
                     />
                     {formData.id_material && !formData.force_set_stock && formData.stock_inicial !== 0 && (
                         <p className="md:col-span-2 text-[10px] font-bold text-amber-600 uppercase tracking-widest bg-amber-50 p-2 rounded-lg border border-amber-100">
