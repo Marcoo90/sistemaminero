@@ -49,20 +49,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 return true;
             }
 
-            // Temporary fallback for admin access
-            if (username === 'admin' && pass === 'admin') {
-                const adminData: User = {
-                    id: 0,
-                    username: 'admin',
-                    role: 'admin',
-                    name: 'Administrador (Respaldo)',
-                };
-                setUser(adminData);
-                sessionStorage.setItem('mining_user', JSON.stringify(adminData));
-                router.push('/');
-                return true;
-            }
-
             return false;
         } catch (error) {
             console.error('Login error:', error);

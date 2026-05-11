@@ -54,6 +54,11 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
         }
     }, [unit, formData.id_material]);
 
+    // Functional updater to avoid stale closures
+    const updateField = (field: string, value: any) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -75,14 +80,14 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                 <Input
                     label="Código de Material"
                     value={formData.codigo_material}
-                    onChange={(e: any) => setFormData({ ...formData, codigo_material: e.target.value })}
+                    onChange={(e: any) => updateField('codigo_material', e.target.value)}
                     required
                     placeholder="Ej: MAT-001"
                 />
                 <Input
                     label="Nombre del Material"
                     value={formData.nombre}
-                    onChange={(e: any) => setFormData({ ...formData, nombre: e.target.value })}
+                    onChange={(e: any) => updateField('nombre', e.target.value)}
                     required
                     placeholder="Ej: Casco de Seguridad"
                 />
@@ -90,20 +95,20 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                     label="Categoría"
                     options={categorias.map(c => ({ value: c.id_categoria.toString(), label: c.nombre }))}
                     value={formData.id_categoria.toString()}
-                    onChange={(e: any) => setFormData({ ...formData, id_categoria: parseInt(e.target.value) })}
+                    onChange={(e: any) => updateField('id_categoria', parseInt(e.target.value))}
                     required
                 />
                 <Select
                     label="Área Asignada"
                     options={areas.map(a => ({ value: a.id_area.toString(), label: a.nombre_area }))}
                     value={formData.id_area.toString()}
-                    onChange={(e: any) => setFormData({ ...formData, id_area: parseInt(e.target.value) })}
+                    onChange={(e: any) => updateField('id_area', parseInt(e.target.value))}
                     required
                 />
                 <Input
                     label="Unidad de Medida"
                     value={formData.unidad_medida}
-                    onChange={(e: any) => setFormData({ ...formData, unidad_medida: e.target.value })}
+                    onChange={(e: any) => updateField('unidad_medida', e.target.value)}
                     required
                     placeholder="Ej: un, kg, lt"
                 />
@@ -113,7 +118,7 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                     value={formData.stock_minimo}
                     onChange={(e: any) => {
                         const val = parseInt(e.target.value);
-                        setFormData({ ...formData, stock_minimo: isNaN(val) ? 0 : val });
+                        updateField('stock_minimo', isNaN(val) ? 0 : val);
                     }}
                     required
                 />
@@ -124,7 +129,7 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                         { value: 'inactivo', label: 'Inactivo' }
                     ]}
                     value={formData.estado}
-                    onChange={(e: any) => setFormData({ ...formData, estado: e.target.value as any })}
+                    onChange={(e: any) => updateField('estado', e.target.value)}
                 />
                 <Input
                     label="Precio Total (S/.)"
@@ -133,7 +138,7 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                     value={formData.precio}
                     onChange={(e: any) => {
                         const val = parseFloat(e.target.value);
-                        setFormData({ ...formData, precio: isNaN(val) ? 0 : val });
+                        updateField('precio', isNaN(val) ? 0 : val);
                     }}
                     placeholder="0.00"
                 />
@@ -150,7 +155,7 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                             value={formData.stock_inicial}
                             onChange={(e: any) => {
                                 const val = parseInt(e.target.value);
-                                setFormData({ ...formData, stock_inicial: isNaN(val) ? 0 : val });
+                                updateField('stock_inicial', isNaN(val) ? 0 : val);
                             }}
                             placeholder="0"
                         />
@@ -160,7 +165,7 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                                     type="checkbox"
                                     className="w-4 h-4 rounded-md border-border text-blue-600 focus:ring-blue-500"
                                     checked={formData.force_set_stock}
-                                    onChange={(e) => setFormData({ ...formData, force_set_stock: e.target.checked })}
+                                    onChange={(e) => updateField('force_set_stock', e.target.checked)}
                                 />
                                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">¿Sobrescribir valor total?</span>
                             </label>
@@ -170,7 +175,7 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                         label="Seleccionar Almacén"
                         options={almacenes.map(a => ({ value: a.id_almacen.toString(), label: a.nombre }))}
                         value={formData.id_almacen}
-                        onChange={(e: any) => setFormData({ ...formData, id_almacen: e.target.value })}
+                        onChange={(e: any) => updateField('id_almacen', e.target.value)}
                         required={formData.stock_inicial !== 0 || formData.force_set_stock}
                     />
                     {formData.id_material && !formData.force_set_stock && formData.stock_inicial !== 0 && (
@@ -185,7 +190,7 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
                 <textarea
                     className="w-full p-4 bg-secondary border border-border rounded-xl text-sm text-foreground focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/50 min-h-[100px] transition-all resize-none"
                     value={formData.descripcion}
-                    onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                    onChange={(e) => updateField('descripcion', e.target.value)}
                     placeholder="Detalles del material..."
                 />
             </div>
@@ -202,3 +207,4 @@ export default function MaterialForm({ initialData }: MaterialFormProps) {
         </form>
     );
 }
+
