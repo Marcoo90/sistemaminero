@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Modules groups breakdown
         const logisticsItems = ['/logistica', '/equipos', '/vehiculos', '/combustible', '/almacen'];
         const adminItems = ['/vales', '/ordenes', '/proveedores', '/viajes'];
-        const sharedItems = ['/', '/reportes'];
+        const sharedItems = ['/', '/reportes', '/personal'];
 
         const isLogisticsAccess = logisticsItems.some(item => path.startsWith(item));
         const isAdminAccess = adminItems.some(item => path.startsWith(item));

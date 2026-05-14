@@ -24,23 +24,24 @@ model Area {
 }
 
 model Personal {
-  id_personal   Int          @id @default(autoincrement())
-  dni           String       @unique
-  nombres       String
-  cargo         String
-  id_area       Int
-  area          Area         @relation(fields: [id_area], references: [id_area])
-  regimen       String
-  fecha_ingreso DateTime
-  estado        String       // 'activo' | 'inactivo' | 'vacaciones'
-  telefono      String?
-  observaciones String?
-  fecha_registro DateTime @default(now())
-  asistencias   Asistencia[]
-  contratos     Contrato[]
-  entregas_epp  EntregaEPP[]
-  usuario       Usuario?
-  viajes        Viaje[]
+  id_personal        Int                 @id @default(autoincrement())
+  dni                String              @unique
+  nombres            String
+  cargo              String
+  id_area            Int
+  area               Area                @relation(fields: [id_area], references: [id_area])
+  regimen            String
+  fecha_ingreso      DateTime
+  estado             String              // 'activo' | 'inactivo' | 'vacaciones'
+  telefono           String?
+  observaciones      String?
+  fecha_registro     DateTime            @default(now())
+  asistencias        Asistencia[]
+  contratos          Contrato[]
+  entregas_epp       EntregaEPP[]
+  usuario            Usuario?
+  viajes             Viaje[]
+  salidas_explosivos SalidaExplosivos[]
 }
 
 model Usuario {
@@ -299,6 +300,35 @@ model StockMaterial {
   almacen      Almacen  @relation(fields: [id_almacen], references: [id_almacen])
 
   @@id([id_material, id_almacen])
+}
+
+model SalidaExplosivos {
+  id_salida_exp       Int                      @id @default(autoincrement())
+  id_personal         Int
+  personal            Personal                 @relation(fields: [id_personal], references: [id_personal])
+  fecha               DateTime
+  turno               String                   // 'mañana' | 'noche'
+  zona_area           String
+  tipo_labor          String
+  planilla_contrata   String?
+  hora_disparo        String?
+  nivel               Float?
+  tipo_perforacion    String?
+  num_disparos        Int?
+  pies_taladros       Float?
+  id_almacen          Int
+  observaciones       String?
+  detalles            DetalleSalidaExplosivos[]
+}
+
+model DetalleSalidaExplosivos {
+  id_det_exp     Int              @id @default(autoincrement())
+  id_salida_exp  Int
+  salida         SalidaExplosivos @relation(fields: [id_salida_exp], references: [id_salida_exp], onDelete: Cascade)
+  tipo_insumo    String           // 'cartucho_gelatina' | 'emulnor' | 'mecha_seguridad'
+  variante       String?          // e.g. '5000 1" 1x7', '4 pies', etc.
+  cantidad       Float
+  id_material    Int?             // optional FK to Material for stock discount
 }
 
 model Contrato {

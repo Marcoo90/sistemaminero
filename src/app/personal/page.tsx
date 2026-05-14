@@ -130,7 +130,7 @@ export default function PersonalPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="flex bg-secondary p-1 rounded-xl border border-border mr-2">
-                        <Link href="/personal/contratos" className="px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-500 transition-colors">Contratos</Link>
+                        <Link href="/personal/explosivos" className="px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-orange-500 transition-colors">Explosivos</Link>
                         <Link href="/personal/epp" className="px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-500 transition-colors border-l border-border">EPP</Link>
                     </div>
                     {!isReadOnly && (

@@ -251,6 +251,36 @@ export interface StockMaterial {
     stock_actual: number;
 }
 
+// --- EXPLOSIVOS ---
+
+export interface SalidaExplosivos {
+    id_salida_exp: number;
+    id_personal: number;
+    personal?: Personal;
+    fecha: string;
+    turno: 'mañana' | 'noche';
+    zona_area: string;
+    tipo_labor: string;
+    planilla_contrata?: string;
+    hora_disparo?: string;
+    nivel?: number;
+    tipo_perforacion?: string;
+    num_disparos?: number;
+    pies_taladros?: number;
+    id_almacen: number;
+    observaciones?: string;
+    detalles?: DetalleSalidaExplosivos[];
+}
+
+export interface DetalleSalidaExplosivos {
+    id_det_exp: number;
+    id_salida_exp: number;
+    tipo_insumo: 'cartucho_gelatina' | 'emulnor' | 'mecha_seguridad';
+    variante?: string;
+    cantidad: number;
+    id_material?: number;
+}
+
 // --- PERSONAL (CONTRACTS & PPE) ---
 
 export interface Contrato {

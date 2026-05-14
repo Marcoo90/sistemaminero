@@ -20,7 +20,8 @@ import {
   ChevronDown,
   Package,
   ShieldCheck,
-  Activity
+  Activity,
+  Zap
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -45,6 +46,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       { name: 'Personal', path: '/personal', icon: Users },
       { name: 'Asistencias', path: '/asistencias', icon: Monitor },
+      { name: 'Salida Explosivos', path: '/personal/explosivos', icon: Zap },
       { name: 'Viajes', path: '/viajes', icon: Truck },
     ]
   },
