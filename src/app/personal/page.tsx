@@ -236,11 +236,11 @@ export default function PersonalPage() {
                                 </div>
                             },
                             {
-                                header: 'Registro',
+                                header: 'F. Ingreso',
                                 accessor: (row: any) => (
                                     <div className="space-y-0.5">
-                                        <p className="text-[11px] font-bold text-slate-500 whitespace-nowrap">{row.fecha_registro?.split(',')[0]}</p>
-                                        <p className="text-[10px] text-blue-500/60 font-black uppercase tracking-tighter">{row.fecha_registro?.split(',')[1]}</p>
+                                        <p className="text-[11px] font-bold text-slate-500 whitespace-nowrap">{row.fecha_ingreso}</p>
+                                        <p className="text-[10px] text-blue-500/60 font-black uppercase tracking-tighter">Fecha Ingreso</p>
                                     </div>
                                 ),
                                 width: '130px'

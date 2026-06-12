@@ -53,6 +53,10 @@ export async function getPersonalById(id: number): Promise<Personal | undefined>
 }
 
 export async function createPersonal(data: Omit<Personal, 'id_personal'>): Promise<Personal> {
+    const entryDate = data.fecha_ingreso && !data.fecha_ingreso.includes('T')
+        ? new Date(`${data.fecha_ingreso}T12:00:00`)
+        : new Date(data.fecha_ingreso);
+
     const created = await prisma.personal.create({
         data: {
             dni: data.dni,
@@ -60,7 +64,7 @@ export async function createPersonal(data: Omit<Personal, 'id_personal'>): Promi
             cargo: data.cargo,
             id_area: Number(data.id_area),
             regimen: data.regimen,
-            fecha_ingreso: new Date(data.fecha_ingreso), // Assuming input is YYYY-MM-DD
+            fecha_ingreso: entryDate,
             estado: data.estado as string,
             telefono: data.telefono,
             observaciones: data.observaciones,
@@ -71,6 +75,10 @@ export async function createPersonal(data: Omit<Personal, 'id_personal'>): Promi
 }
 
 export async function updatePersonal(id: number, data: Partial<Personal>): Promise<Personal> {
+    const entryDate = data.fecha_ingreso
+        ? (data.fecha_ingreso.includes('T') ? new Date(data.fecha_ingreso) : new Date(`${data.fecha_ingreso}T12:00:00`))
+        : undefined;
+
     const updated = await prisma.personal.update({
         where: { id_personal: id },
         data: {
@@ -80,7 +88,7 @@ export async function updatePersonal(id: number, data: Partial<Personal>): Promi
             id_area: data.id_area ? Number(data.id_area) : undefined,
             regimen: data.regimen,
             //@ts-ignore
-            fecha_ingreso: data.fecha_ingreso ? new Date(data.fecha_ingreso) : undefined,
+            fecha_ingreso: entryDate,
             estado: data.estado,
             telefono: data.telefono,
             observaciones: data.observaciones

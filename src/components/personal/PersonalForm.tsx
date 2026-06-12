@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { getAreasAll } from '@/services/personalService';
+import { peruDateToInputDate } from '@/lib/dateUtils';
 
 interface PersonalFormProps {
     initialData?: Personal;
@@ -31,7 +32,10 @@ export default function PersonalForm({ initialData, onSave, onCancel }: Personal
 
     useEffect(() => {
         if (initialData) {
-            setFormData(initialData);
+            setFormData({
+                ...initialData,
+                fecha_ingreso: peruDateToInputDate(initialData.fecha_ingreso)
+            });
         }
         loadAreas();
     }, [initialData]);
