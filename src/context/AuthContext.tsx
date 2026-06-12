@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                 setUser(userData);
                 sessionStorage.setItem('mining_user', JSON.stringify(userData));
-                router.push('/');
+                router.push(dbUser.rol === 'visitante' ? '/personal' : '/');
                 return true;
             }
 
@@ -68,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (role === 'admin') return true;
         if (role === 'gerente' || role === 'gerencia') return path !== '/configuracion/usuarios';
         if (role === 'conductor') return path === '/viajes' || path === '/';
+        if (role === 'visitante') return path === '/personal';
 
         // Modules groups breakdown
         const logisticsItems = ['/logistica', '/equipos', '/vehiculos', '/combustible', '/almacen'];
@@ -96,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!user) return false;
         const role = user.role;
         if (role === 'admin') return true;
-        if (role === 'gerente' || role === 'gerencia') return false; // Strictly view only
+        if (role === 'gerente' || role === 'gerencia' || role === 'visitante') return false; // Strictly view only
 
         if (role === 'almacenero' || role === 'ing_seguridad' || role === 'ing_supervision_operacion_minera') {
             // Personal is read-only except EPP section

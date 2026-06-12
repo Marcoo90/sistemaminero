@@ -148,7 +148,7 @@ export default function Sidebar() {
 
         {/* Navigation Content */}
         <nav className="flex-1 overflow-y-auto px-3 py-6 space-y-8 custom-scrollbar">
-          {user?.role !== 'conductor' && (
+          {user?.role !== 'conductor' && user?.role !== 'visitante' && (
             <div>
               <Link
                 href="/"

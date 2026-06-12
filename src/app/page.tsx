@@ -24,6 +24,8 @@ export default function Home() {
   useEffect(() => {
     if (user?.role === 'conductor') {
       router.push('/viajes');
+    } else if (user?.role === 'visitante') {
+      router.push('/personal');
     }
   }, [user, router]);
 
