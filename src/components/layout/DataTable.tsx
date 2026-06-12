@@ -58,7 +58,7 @@ export function DataTable<T extends Record<string, any>>({
   readOnly
 }: DataTableProps<T>) {
   const { user } = useAuth();
-  const isReadOnly = readOnly !== undefined ? readOnly : (user?.role === 'gerente' || user?.role === 'gerencia');
+  const isReadOnly = readOnly !== undefined ? readOnly : (user?.role === 'gerente' || user?.role === 'gerencia' || user?.role === 'visitante');
   const [sortConfig, setSortConfig] = React.useState<{ key: keyof T; direction: 'asc' | 'desc' } | null>(null);
 
   const sortedData = React.useMemo(() => {

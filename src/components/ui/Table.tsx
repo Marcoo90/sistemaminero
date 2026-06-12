@@ -35,7 +35,7 @@ export const Table = <T extends unknown>({
     keyField = 'id' as keyof T
 }: TableProps<T> & { keyField?: keyof T }) => {
     const { user } = useAuth();
-    const isReadOnly = readOnly !== undefined ? readOnly : (user?.role === 'gerente' || user?.role === 'gerencia');
+    const isReadOnly = readOnly !== undefined ? readOnly : (user?.role === 'gerente' || user?.role === 'gerencia' || user?.role === 'visitante');
     const visibleColumns = columns.filter(col => !col.hidden);
 
     const [filters, setFilters] = useState<Record<number, string>>({});

@@ -149,6 +149,7 @@ export default function UsuarioForm({ initialData, onSave, onCancel }: UsuarioFo
                             { value: 'ing_supervision_operacion_minera', label: 'ING. de supervision y operacion minera' },
                             { value: 'asistente_administrativo', label: 'Asistente Administrativo' },
                             { value: 'conductor', label: 'Conductor (Solo Viajes)' },
+                            { value: 'visitante', label: 'Visitante (Solo Personal)' },
                         ]}
                     />
                 </div>

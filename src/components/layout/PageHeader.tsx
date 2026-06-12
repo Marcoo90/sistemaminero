@@ -20,7 +20,7 @@ export function PageHeader({
   breadcrumbs
 }: PageHeaderProps) {
   const { user } = useAuth();
-  const isReadOnly = user?.role === 'gerente' || user?.role === 'gerencia';
+  const isReadOnly = user?.role === 'gerente' || user?.role === 'gerencia' || user?.role === 'visitante';
 
   return (
     <div className="bg-card rounded-3xl p-6 md:p-8 mb-6 md:mb-8 border border-border shadow-sm">
