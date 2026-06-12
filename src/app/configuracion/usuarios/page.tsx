@@ -69,7 +69,7 @@ export default function UsuariosPage() {
 
     if (view === 'form') {
         return (
-            <div className="space-y-10 animate-fade-in">
+            <div key="usuario-form-container" className="space-y-10 animate-fade-in">
                 <PageHeader
                     title={editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
                     description="Configuración de credenciales y niveles de acceso."
@@ -86,7 +86,7 @@ export default function UsuariosPage() {
     }
 
     return (
-        <div className="space-y-10 animate-fade-in">
+        <div key="usuario-list-container" className="space-y-10 animate-fade-in">
             <PageHeader
                 title="Gestión de Usuarios"
                 description="Administración de cuentas, permisos y seguridad del sistema."

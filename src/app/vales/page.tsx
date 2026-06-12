@@ -92,7 +92,7 @@ export default function ValesPage() {
 
     if (view === 'form') {
         return (
-            <div className="space-y-10 animate-fade-in">
+            <div key="vales-form-container" className="space-y-10 animate-fade-in">
                 <PageHeader
                     title={editingVale ? "Editar Vale de Gasto" : "Nuevo Vale de Gasto"}
                     description="Control de gastos menores y autorizaciones de fondos operativos."
@@ -108,7 +108,7 @@ export default function ValesPage() {
     }
 
     return (
-        <div className="space-y-10 animate-fade-in">
+        <div key="vales-list-container" className="space-y-10 animate-fade-in">
             <PageHeader
                 title="Vales y Gastos"
                 description="Control de gastos menores y autorizaciones de fondos operativos."

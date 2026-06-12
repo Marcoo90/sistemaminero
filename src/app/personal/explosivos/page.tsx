@@ -72,7 +72,7 @@ export default function ExplosivosPage() {
     // ── Form View ─────────────────────────────────────────────────────────────
     if (view === 'form') {
         return (
-            <div className="space-y-10 animate-fade-in">
+            <div key="explosivos-form-container" className="space-y-10 animate-fade-in">
                 <PageHeader
                     title="Nueva Salida de Explosivos"
                     description="Registro de asignación y descuento de inventario de explosivos."
@@ -97,7 +97,7 @@ export default function ExplosivosPage() {
 
     // ── List View ─────────────────────────────────────────────────────────────
     return (
-        <div className="space-y-10 animate-fade-in">
+        <div key="explosivos-list-container" className="space-y-10 animate-fade-in">
             <PageHeader
                 title="Salida de Explosivos"
                 description="Control de asignación de explosivos a trabajadores. Cada salida genera un movimiento de inventario trazable."
