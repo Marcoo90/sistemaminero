@@ -44,26 +44,48 @@ export default function UsuariosPage() {
     };
 
     const handleSave = async (data: any) => {
-        if (editingUser) {
-            await updateUsuario(editingUser.id_usuario, data);
-        } else {
-            await createUsuario({
-                usuario: data.usuario,
-                clave: data.clave,
-                rol: data.rol,
-                nombre: data.nombre,
-                id_personal: data.id_personal
-            });
+        try {
+            if (editingUser) {
+                const result = await updateUsuario(editingUser.id_usuario, data);
+                if (!result.success) {
+                    alert(result.error || 'Error al actualizar el usuario.');
+                    return;
+                }
+            } else {
+                const result = await createUsuario({
+                    usuario: data.usuario,
+                    clave: data.clave,
+                    rol: data.rol,
+                    nombre: data.nombre,
+                    id_personal: data.id_personal
+                });
+                if (!result.success) {
+                    alert(result.error || 'Error al crear el usuario.');
+                    return;
+                }
+            }
+            setView('list');
+            setEditingUser(undefined);
+            loadData();
+        } catch (error) {
+            console.error('Error al guardar usuario:', error);
+            alert('Ocurrió un error inesperado. Inténtelo nuevamente.');
         }
-        setView('list');
-        setEditingUser(undefined);
-        loadData();
     };
 
     const handleDelete = async (id: number) => {
         if (confirm('¿Está seguro de eliminar este usuario?')) {
-            await deleteUsuario(id);
-            loadData();
+            try {
+                const result = await deleteUsuario(id);
+                if (!result.success) {
+                    alert(result.error || 'Error al eliminar el usuario.');
+                    return;
+                }
+                loadData();
+            } catch (error) {
+                console.error('Error al eliminar usuario:', error);
+                alert('Ocurrió un error inesperado al eliminar.');
+            }
         }
     };
 
