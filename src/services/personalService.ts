@@ -30,7 +30,12 @@ const formatPersonal = (item: any) => ({
 // Area Functions
 export async function getAreasAll(): Promise<Area[]> {
     noStore();
-    return await prisma.area.findMany() as Area[];
+    try {
+        return await prisma.area.findMany() as Area[];
+    } catch (error: any) {
+        console.error("Error al obtener áreas:", error);
+        return [];
+    }
 }
 
 export async function getAreaById(id: number): Promise<Area | undefined> {
@@ -40,11 +45,16 @@ export async function getAreaById(id: number): Promise<Area | undefined> {
 
 // Personal Functions
 export async function getPersonalAll(): Promise<Personal[]> {
-    const data = await prisma.personal.findMany({
-        where: { estado: { not: 'inactivo' } },
-        orderBy: { id_personal: 'desc' }
-    });
-    return data.map(formatPersonal) as Personal[];
+    try {
+        const data = await prisma.personal.findMany({
+            where: { estado: { not: 'inactivo' } },
+            orderBy: { id_personal: 'desc' }
+        });
+        return data.map(formatPersonal) as Personal[];
+    } catch (error: any) {
+        console.error("Error al obtener personal:", error);
+        return [];
+    }
 }
 
 export async function getPersonalById(id: number): Promise<Personal | undefined> {
@@ -52,57 +62,87 @@ export async function getPersonalById(id: number): Promise<Personal | undefined>
     return personal ? (formatPersonal(personal) as Personal) : undefined;
 }
 
-export async function createPersonal(data: Omit<Personal, 'id_personal'>): Promise<Personal> {
-    const entryDate = data.fecha_ingreso && !data.fecha_ingreso.includes('T')
-        ? new Date(`${data.fecha_ingreso}T12:00:00`)
-        : new Date(data.fecha_ingreso);
-
-    const created = await prisma.personal.create({
-        data: {
-            dni: data.dni,
-            nombres: data.nombres,
-            cargo: data.cargo,
-            id_area: Number(data.id_area),
-            regimen: data.regimen,
-            fecha_ingreso: entryDate,
-            estado: data.estado as string,
-            telefono: data.telefono,
-            observaciones: data.observaciones,
-            fecha_registro: new Date()
+export async function createPersonal(data: Omit<Personal, 'id_personal'>): Promise<{ success: boolean; personal?: Personal; error?: string }> {
+    try {
+        // Check for duplicate DNI
+        if (data.dni) {
+            const existing = await prisma.personal.findFirst({ where: { dni: data.dni } });
+            if (existing) {
+                return { success: false, error: `Ya existe un registro con DNI "${data.dni}".` };
+            }
         }
-    });
-    return formatPersonal(created) as Personal;
+
+        const entryDate = data.fecha_ingreso && !data.fecha_ingreso.includes('T')
+            ? new Date(`${data.fecha_ingreso}T12:00:00`)
+            : new Date(data.fecha_ingreso);
+
+        const created = await prisma.personal.create({
+            data: {
+                dni: data.dni,
+                nombres: data.nombres,
+                cargo: data.cargo,
+                id_area: Number(data.id_area),
+                regimen: data.regimen,
+                fecha_ingreso: entryDate,
+                estado: data.estado as string,
+                telefono: data.telefono,
+                observaciones: data.observaciones,
+                fecha_registro: new Date()
+            }
+        });
+        return { success: true, personal: formatPersonal(created) as Personal };
+    } catch (error: any) {
+        console.error("Error al crear personal:", error);
+        if (error?.code === 'P2002') {
+            return { success: false, error: `Ya existe un registro con ese DNI.` };
+        }
+        return { success: false, error: error?.message || 'Error inesperado al crear el registro.' };
+    }
 }
 
-export async function updatePersonal(id: number, data: Partial<Personal>): Promise<Personal> {
-    const entryDate = data.fecha_ingreso
-        ? (data.fecha_ingreso.includes('T') ? new Date(data.fecha_ingreso) : new Date(`${data.fecha_ingreso}T12:00:00`))
-        : undefined;
+export async function updatePersonal(id: number, data: Partial<Personal>): Promise<{ success: boolean; personal?: Personal; error?: string }> {
+    try {
+        const entryDate = data.fecha_ingreso
+            ? (data.fecha_ingreso.includes('T') ? new Date(data.fecha_ingreso) : new Date(`${data.fecha_ingreso}T12:00:00`))
+            : undefined;
 
-    const updated = await prisma.personal.update({
-        where: { id_personal: id },
-        data: {
-            dni: data.dni,
-            nombres: data.nombres,
-            cargo: data.cargo,
-            id_area: data.id_area ? Number(data.id_area) : undefined,
-            regimen: data.regimen,
-            //@ts-ignore
-            fecha_ingreso: entryDate,
-            estado: data.estado,
-            telefono: data.telefono,
-            observaciones: data.observaciones
+        const updated = await prisma.personal.update({
+            where: { id_personal: id },
+            data: {
+                dni: data.dni,
+                nombres: data.nombres,
+                cargo: data.cargo,
+                id_area: data.id_area ? Number(data.id_area) : undefined,
+                regimen: data.regimen,
+                //@ts-ignore
+                fecha_ingreso: entryDate,
+                estado: data.estado,
+                telefono: data.telefono,
+                observaciones: data.observaciones
+            }
+        });
+        return { success: true, personal: formatPersonal(updated) as Personal };
+    } catch (error: any) {
+        console.error("Error al actualizar personal:", error);
+        if (error?.code === 'P2002') {
+            return { success: false, error: 'Ya existe otro registro con ese DNI.' };
         }
-    });
-    return formatPersonal(updated) as Personal;
+        return { success: false, error: error?.message || 'Error inesperado al actualizar.' };
+    }
 }
 
-export async function deletePersonal(id: number): Promise<void> {
-    // Soft delete due to constraints
-    await prisma.personal.update({
-        where: { id_personal: id },
-        data: { estado: 'inactivo' }
-    });
+export async function deletePersonal(id: number): Promise<{ success: boolean; error?: string }> {
+    try {
+        // Soft delete due to constraints
+        await prisma.personal.update({
+            where: { id_personal: id },
+            data: { estado: 'inactivo' }
+        });
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error al eliminar personal:", error);
+        return { success: false, error: error?.message || 'Error inesperado al eliminar.' };
+    }
 }
 
 // Contracts
